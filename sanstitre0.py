@@ -24,7 +24,8 @@ df.info()
 print(df.isnull().sum())
 df.describe()
 
-def encoding_all_data(data,reverse=False):
+
+def encoding_all_data(data, reverse=False):
     import pandas as pd
     from sklearn.preprocessing import LabelEncoder
     # Séparer les variables numériques
@@ -57,17 +58,18 @@ def encoding_all_data(data,reverse=False):
             variable = column
             code = code
             classe = classe
-            
+
             infos = infos._append({
                 "Variable": variable,
                 "Code": code,
                 "Modalité": classe
-            }, ignore_index=True)      
+            }, ignore_index=True)
 
     # Réintégrer les variables numériques dans le jeu de données encodé
     encoded_data = pd.concat([non_numeric_data, data[numeric_columns]], axis=1)
 
     return encoded_data, infos
+
 
 df, infos = encoding_all_data(df, reverse=True)
 
@@ -86,6 +88,7 @@ models = [xg, ada, cat, lg]
 
 models_dict = {'XGBClassifier': xg, 'AdaBoostClassifier': ada,
                'CatBoostClassifier': cat, 'LGBMClassifier': lg}
+
 
 def compare_boosting(models, nb_estimators, learn_rate, gamma, l1, l2, max_depth,
                      metric, cv=5, average_metric='macro',
@@ -243,19 +246,86 @@ def compare_boosting(models, nb_estimators, learn_rate, gamma, l1, l2, max_depth
 
 
 best_params_per_model, results_per_model, max_depth_RF = compare_boosting(models=models,
-                                                                          nb_estimators=np.arange(
-                                                                              50, 90, 5),
-                                                                          learn_rate=np.arange(
-                                                                              0.1, 1.1, 0.1),
-                                                                          gamma=np.arange(
-                                                                              0, 16, 1),
-                                                                          l1=np.arange(
-                                                                              0, 16, 1),
-                                                                          l2=np.arange(
-                                                                              0, 16, 1),
-                                                                          max_depth=np.arange(
-                                                                              0, 16, 1),
+                                                                          nb_estimators=[
+                                                                              50, 60, 70],
+                                                                          learn_rate=[
+                                                                              0.5, 0.75, 1],
+                                                                          gamma=[
+                                                                              1, 3, 5],
+                                                                          l1=[1,
+                                                                              3, 5],
+                                                                          l2=[1,
+                                                                              3, 5],
+                                                                          max_depth=[
+                                                                              6, 8, 10],
                                                                           metric='accuracy',
                                                                           average_metric='macro')
 
-resultats = entrainement_model_optimal(models[3], average_metric='macro')
+
+def entrainement_model_optimal(selected_model, average_metric, X_train=X_train, y_train=y_train, X_test=X_test, y_test=y_test):
+
+    # Récupérer les paramètres du modèle sélectionné
+    model_params = selected_model.get_params()
+    print("Paramètres du modèle sélectionné:")
+    for param, value in model_params.items():
+        print(f"{param}: {value}")
+    print()
+
+    # Entraîner le modèle sur les données d'entraînement
+    selected_model.fit(X_train, y_train)
+
+    # Utiliser le modèle pour faire des prédictions sur la base d'apprentissage, de test et la base complète
+    y_train_pred = selected_model.predict(X_train)
+    y_test_pred = selected_model.predict(X_test)
+    y_pred = selected_model.predict(X)
+
+    # Calculer les métriques de classification
+    train_accuracy = round(accuracy_score(y_train, y_train_pred), 1)
+    train_recall = round(recall_score(
+        y_train, y_train_pred, average=average_metric), 1)
+    train_f1 = round(f1_score(y_train, y_train_pred,
+                     average=average_metric), 1)
+
+    test_accuracy = round(accuracy_score(y_test, y_test_pred), 1)
+    test_recall = round(recall_score(
+        y_test, y_test_pred, average=average_metric), 1)
+    test_f1 = round(f1_score(y_test, y_test_pred, average=average_metric), 2)
+
+    accuracy = round(accuracy_score(y, y_pred), 1)
+    recall = round(recall_score(y, y_pred, average=average_metric), 1)
+    f1 = round(f1_score(y, y_pred, average=average_metric), 1)
+
+    # Récupérer l'importance des variables
+    feature_importance = selected_model.feature_importances_
+
+    # Créer une DataFrame pour stocker les résultats
+    metrics_df = pd.DataFrame({
+        'Base': ['Apprentissage', 'Validation', 'Complète'],
+        'Accuracy': [train_accuracy, test_accuracy, accuracy],
+        'Recall': [train_recall, test_recall, recall],
+        'F1': [train_f1, test_f1, f1]})
+
+    # Trier les variables par ordre d'importance
+    feature_names = X_train.columns
+    sorted_idx = feature_importance.argsort()[::-1]
+    sorted_feature_names = feature_names[sorted_idx]
+
+    # Visualisation de l'importance des variables
+    plt.figure(figsize=(10, 6))
+    barplot = sns.barplot(
+        x=feature_importance[sorted_idx], y=sorted_feature_names, palette="viridis")
+    plt.title("Importance des variables")
+    plt.xlabel("Importance")
+    plt.ylabel("Variables")
+
+    # Ajouter des étiquettes de données
+    for i, val in enumerate(feature_importance[sorted_idx]):
+        barplot.text(val, i, f'{val:.2f}', va='center')
+
+    plt.show()
+
+    return metrics_df
+
+
+# Appeler la fonction avec les hyperparamètres
+resultats = entrainement_model_optimal(models[0], average_metric='macro')

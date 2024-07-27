@@ -23,7 +23,6 @@ Les conditions préalables pour exploiter efficacement ce projet varient selon l
 - __src__     
     - **`\data`** : Dossier où on retrouve le les fichier .csv étant la base de données utilisées.      
     - **`\tools`** : Ttous les codes Python et R dont un script Python dédié aux fonctions utilisées par les autres scripts       
-- __tests__ : Tests unitaires effectués sur les fonctions.       
 - __README.md__ : Le message qui décrit le projet         
 - __requirements_Pyton.txt__ : Liste des modules nécessaires à l'éxecution des codes Python.  
 - __requirements_R.txt__ : Liste des modules nécessaires à l'éxecution des codes R.      
@@ -94,11 +93,13 @@ Il y a néanmoins une observation qui est validée statistiquement : les quantit
 
 Conclusion : même si des actions marketing et commerciales sont menées, le chiffre d'affaires peut sûrement augmenté, mais cela ne restera que marginal.
 
-## Moélisation du chiffre d'affaires
+## Modélisation du chiffre d'affaires
 
 Le deuxième enjeu de cete étude est d'estimer le niveau du chiffre d'affaires pour l'année 2024, au du moins le debut de l'année 2024.
 Pour cela, deux modèles ont été utilisé : ARMA et GARCH. Ces modèles ont été ensuite passé dans la phase de validation pour confirmer si la modélisation était correct mathématiquement.
 Etant donné que l'évolution du chiffre d'affaires avait une moyenne constante au fil du temps, il n'y avait aucuen raison de différencier la série (technique pour rendre stationnaire une série temporelle).
+
 Cependant, même le meilleur modèle ARMA (ARMA(0,0)) n'arrive pas à capter la structure temporelle dans les données. Autrement dit, les observations sont indépendantes et identiquement distribuées autour de la moyenne qui est une constante : ce n'est que du bruit blanc. Les prévisions se font donc seulement à partir de cette moyenne constante. De plus, les résidus présentent une hétéroscédasticité : la variance des résidus change au fil du temps. Pour remédier à ce problème, le modèle GARCH permet de meiux capter cette volatilité qui peut changer selon les périodes.
+
 En développement un modèle GARCH(6,0) - donc un un modèle ARCH(6) - il apparait que des prévisions sur le long terme ne sont pas possibles car le modèle converge vers une seule valeurau bout de quelques jours. De plus, le modèle ne valide pas l'hypothèse d'hétéroscédasticité conditionnelle qui doit être présente. Autrement dit, le modèle ARCH (ou GARCH) est approprié lorsque la variance des résidus dépend de l'information passée. C'est pas le cas ici.
 En conclusion : ni le modèle ARMA, ni le modèle ARCH ne sont appropriés pour cette série temporelle. L'explication peut-être que la base de données est simulées et que les valeurs sont générées aléatoirement.

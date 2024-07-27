@@ -1,0 +1,2 @@
+Factoshiny==2.6
+dplyr==1.1.4

@@ -1,47 +1,8 @@
 # =============================================================================
-# Importation des packages nécessaires
-# =============================================================================
-
-import pandas as pd
-import numpy as np
-from sklearn.preprocessing import MinMaxScaler
-from sktime.forecasting.model_selection import temporal_train_test_split
-from sktime.forecasting.base import ForecastingHorizon
-import seaborn as sns
-from sklearn.pipeline import Pipeline
-import matplotlib.pyplot as plt
-import warnings
-from statsmodels.tsa.stattools import adfuller
-from statsmodels.tsa.stattools import kpss
-from pylab import rcParams
-import statsmodels.api as sm
-from statsmodels.graphics.tsaplots import plot_acf, plot_pacf
-from statsmodels.tsa.seasonal import seasonal_decompose
-from statsmodels.tsa.arima.model import ARIMA
-import itertools
-from statsmodels.graphics.tsaplots import acf, pacf
-import pmdarima as pm
-from pmdarima import model_selection
-from statistics import mode
-from statsmodels.tsa.seasonal import STL
-from pmdarima import auto_arima
-from sktime.performance_metrics.forecasting import mean_absolute_percentage_error
-from statsmodels.stats.diagnostic import het_breuschpagan
-from statsmodels.tools import add_constant
-from datetime import timedelta
-from arch import arch_model
-from statsmodels.stats.diagnostic import het_arch, acorr_ljungbox
-from tqdm import tqdm
-from sklearn.model_selection import TimeSeriesSplit, ParameterGrid
-import warnings
-from scipy.stats import shapiro
-warnings.filterwarnings("ignore")
-
-# =============================================================================
 # Importation de la base puis traitement
 # =============================================================================
 
-df = pd.read_csv(r"C:\Projets_personnels\Ventes_magasin\Ventes.csv", sep=";")
+df = pd.read_csv("Ventes.csv", sep=";")
 
 # Conservation que des colonnes utiles pour la modélisation
 df.columns  # Pour avoir la liste des variables
@@ -172,7 +133,7 @@ print(results_df.iloc[:, -2:])
 # Les résidus sont un bruit blanc
 # Lé série n'est que du bruit blanc : p = q = 0
 # Donc il n'y a rien à modéliser
-# Les résidus sont hétéroscédastique
+# Les résidus sont hétéroscédastiques
 # Développement d'un modèle ARCH (ou GARCH) pour capturer cette hétéroscédasticité des résidus
 
 # =============================================================================
@@ -200,7 +161,7 @@ pred = pd.Series(np.sqrt(pred.variance.values[-1, :]), index=future_dates)
 
 plt.figure(figsize=(10, 4))
 plt.plot(pred)
-plt.title('Prédiction de Volatilité - 15 Prochains Jours', fontsize=20)
+plt.title('Prédiction de Volatilité - 30 Prochains Jours', fontsize=20)
 
 # =============================================================================
 # Vérification des hypothèses
@@ -226,7 +187,7 @@ print(f'Shapiro-Wilk statistic: {stat}, p-value: {p}')
 # LM test for ARCH effects pour vérifier la présence d'hétéroscédasticité conditionnelle
 lm_test = het_arch(results.resid)
 print('LM Statistical Test: %.3f, p-value: %.3f' % (lm_test[0], lm_test[1]))
-# Le modèle ne capture pas correctement la structure de volatilité
+# Le modèle ne capture pas correctement la structure de volatilité (car la P-Value est trop grande)
 
-# Globalement, le modèle ARMA et GARCH ne sont pas de bons modèles pour
+# Globalement, le modèle ARMA et ARCH ne sont pas de bons modèles pour
 # modéliser les ventes de produits

@@ -1,3 +1,29 @@
+# =============================================================================
+# Importation des packages
+# =============================================================================
+import pandas as pd
+import numpy as np
+from sktime.forecasting.model_selection import temporal_train_test_split
+from sktime.performance_metrics.forecasting import mean_absolute_percentage_error
+import matplotlib.pyplot as plt
+from statsmodels.tsa.stattools import adfuller
+import statsmodels.api as sm
+from statsmodels.graphics.tsaplots import plot_acf, plot_pacf
+from statsmodels.tsa.arima.model import ARIMA
+from statsmodels.stats.diagnostic import het_breuschpagan, het_arch
+from statsmodels.tools import add_constant
+from datetime import timedelta
+from arch import arch_model
+from sklearn.model_selection import TimeSeriesSplit, ParameterGrid
+from scipy.stats import shapiro
+import warnings
+warnings.filterwarnings("ignore")
+
+# =============================================================================
+# Définition des fonctions
+# =============================================================================
+
+
 def DickeyFuller(data, feature, pvalue, show_graph=False):
     data = data.dropna()
     # Perform the Augmented Dickey-Fuller test

@@ -3,7 +3,7 @@ from scipy.stats import chi2_contingency
 from scipy.stats import shapiro, ansari, mannwhitneyu, fligner, kruskal, spearmanr
 import pingouin as pg
 
-df = pd.read_csv(r"C:\Projets_personnels\Ventes_magasin\Ventes.csv", sep=";")
+df = pd.read_csv("Ventes.csv", sep=";")
 
 del df['Transaction ID'], df['Customer ID']
 
@@ -42,6 +42,7 @@ _, p_value_mediane = mannwhitneyu(df_man['Quantity'], df_woman['Quantity'])
 
 # Réponse : Aucun n'achète en moyenne plus que l'autre en quantité.
 
+
 # 3. Est-ce que l'âge des clients a un impact sur leurs préférences, en uanitité et en produit ?
 
 df_clothes = df[df['Product Category'] == 'Clothing']
@@ -74,6 +75,7 @@ multivariate_normality
 corr_spearman, p_spearman = spearmanr(df['Age'], df['Quantity'])
 
 # Il n'existe donc aucune relation monotone entre l'âge des clients et les produits et quantités vendues
+
 
 # 4. Quels sont les produits les plus achetés ?
 

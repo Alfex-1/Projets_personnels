@@ -4,24 +4,30 @@
 import pandas as pd
 import numpy as np
 from sktime.forecasting.model_selection import temporal_train_test_split
+from sklearn.model_selection import TimeSeriesSplit
 from sktime.performance_metrics.forecasting import mean_absolute_percentage_error
+from sklearn.metrics import mean_squared_error, mean_absolute_error
 import matplotlib.pyplot as plt
 from statsmodels.tsa.stattools import adfuller
 import statsmodels.api as sm
 from statsmodels.graphics.tsaplots import plot_acf, plot_pacf
 from statsmodels.tsa.arima.model import ARIMA
+from arch import arch_model
 from statsmodels.stats.diagnostic import het_breuschpagan, het_arch
 from statsmodels.tools import add_constant
 from datetime import timedelta
 from arch import arch_model
 from sklearn.model_selection import TimeSeriesSplit, ParameterGrid
-from scipy.stats import shapiro
+from scipy.stats import shapiro, ansari, mannwhitneyu, fligner, kruskal, spearmanr, pearsonr, chi2_contingency
+import pingouin as pg
 import warnings
 warnings.filterwarnings("ignore")
 
 # =============================================================================
 # Définition des fonctions
 # =============================================================================
+
+# Fonction qui évalue si une série est stationnaire ou non avec un test de Dickey Fuller
 
 
 def DickeyFuller(data, feature, pvalue, show_graph=False):
@@ -44,6 +50,8 @@ def DickeyFuller(data, feature, pvalue, show_graph=False):
     else:
         ccl = "non-stationnary"
     return ccl
+
+# Fonction pour choisir les paramètres p et q du modèle ARMA fcailement à partir de l'ACF et la PACF
 
 
 def pq_param(lags, data):
@@ -149,3 +157,35 @@ def GARCH_search(data, feature, p_max, q_max):
         results, columns=['Rank', 'Params', 'Std Test Score'])
 
     return df_results
+
+
+def correlation(df, var1, var2, alpha=0.05):
+
+    # Tester la normalité du couple d'observations
+    multivariate_normality = pg.multivariate_normality(df[[var1, var2]])
+
+    if multivariate_normality[1] > alpha:
+        corr, p = pearsonr(df[var1], df[var2])
+        print("\nLe test effectué est le test de Pearson")
+
+    else:
+        corr, p = spearmanr(df[var1], df[var2])
+        print("\nLe test effectué est le test de Spearman")
+
+    corr = round(corr*100, 2)
+    p = round(p, 4)
+
+    return corr, p, test
+
+
+def chi2(df, var1, var2):
+    # Table de contingence
+    table_contin = pd.crosstab(df[var1], df[var2])
+
+    # Test du Khi-Deux
+    _, p, _, _ = chi2_contingency(table_contin)
+
+    return p
+
+
+p = chi2(df, 'Gender', 'Product Category')

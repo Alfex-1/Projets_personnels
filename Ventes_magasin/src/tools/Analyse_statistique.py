@@ -66,13 +66,9 @@ _, p_value_mediane_age = kruskal(
     df_clothes['Age'], df_electro['Age'], df_beauty['Age'])
 # Les médianes sont statistiquement égales
 
-# Tester la normalité du couple d'observations
-multivariate_normality = pg.multivariate_normality(df[['Age', 'Quantity']])
-multivariate_normality
-# La normalité n'est pas respectée
 
-# Test de corrélation monotone
-corr_spearman, p_spearman = spearmanr(df['Age'], df['Quantity'])
+# Test de corrélation
+corr, pvalue, test = correlation(df, 'Age', 'Quantity', alpha=0.05)
 
 # Il n'existe donc aucune relation monotone entre l'âge des clients et les produits et quantités vendues
 

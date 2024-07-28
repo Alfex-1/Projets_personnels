@@ -1,0 +1,27 @@
+Stratégie de traitement :
+ 1) On ne garde que les variables qui contribuent au calcul du nutri-score
+ 2) On supprime les individus qui n'ont pas de nutri-score de rensigné
+ 3) Pour assurer un équilibre dans les données sans trop sur-échantillonnage : 
+       - On supprime les individus extrêmes de la classe majoritaire (classe D) pour mettre au même nombre d'individu que la deuxième classe (classe C)
+       - Si il y a encore trop d'individu de classe D, on supprime des individus au hasard jusqu'à qu'il y en un nombre inférieur (si grand nombre d'individus extrêmes de la classe D) ou égal à la classe C.
+ 4) On impute les données manquantes
+ 5) On sur-échantillonne pour équilibrer les classes
+
+
+
+
+Modèle choisit : XGBClassifier(
+    n_estimators=80,
+    learning_rate=0.6,
+    gamma=0.5,
+    reg_alpha=1,
+    reg_lambda=1,
+    max_depth=10,
+    use_label_encoder=False, 
+    eval_metric='mlogloss')  SUR LES DONNEES NON-EQUILIBREES
+
+
+Résultats : F1-Score moyenné par le poids (weighted avg)
+
+Train : 94,2 %
+Test : 91,1 %

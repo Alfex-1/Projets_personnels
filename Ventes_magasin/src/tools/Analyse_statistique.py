@@ -13,7 +13,7 @@ df['Date'] = pd.to_datetime(df['Date'], dayfirst=True)
 # Questions
 # =============================================================================
 
-# 1. Est-ce qu'il y a une catgéorie de produit privilégiée par les hommes ou les femmes ?
+# 1. Est-ce qu'il y a une catégorie de produit privilégiée par les hommes ou les femmes ?
 
 table_contin, p_value_chi2 = chi2(df, 'Gender', 'Product Category')
 
@@ -24,23 +24,22 @@ table_contin, p_value_chi2 = chi2(df, 'Gender', 'Product Category')
 
 quant_binary_ind(df, 'Gender', 'Quantity', alpha=0.05, graph=True)
 
-# Réponse : Les deux groupes ont la même médiane statistiquement.
-# Donc aucun genre n'achète en moyenne plus que l'autre en quantité.
+# Réponse : Aucun genre n'achète en moyenne plus que l'autre en quantité.
 
 
-# 3. Est-ce que l'âge des clients a un impact sur leurs préférences, en uanitité et en produit ?
+# 3. Est-ce que l'âge des clients a un impact sur leurs préférences, en quantité et en produit ?
 
 quant_multi_ind(df, 'Product Category', 'Age', alpha=0.05, graph=True)
-# Les médianes sont statistiquement égales
 
 
 # Test de corrélation
 corr, pvalue_corr = correlation(df, 'Age', 'Quantity', alpha=0.05)
 
-# Il n'existe donc aucune relation monotone entre l'âge des clients et les produits et quantités vendues
+# Réponse : L'âge n'impact en rien le choix des clients e quantité et en catégorie de produit
 
 
 # 4. Quels sont les produits les plus achetés ?
 
 quant_multi_ind(df, 'Product Category', 'Quantity', alpha=0.05, graph=True)
-# Les médianes sont statistiquement égales
+
+# Réponse : Aucun produit n'est privilégié autre par rapport aux autres

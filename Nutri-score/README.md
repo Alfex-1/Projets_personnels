@@ -11,10 +11,13 @@ Par ces questions, il faut tirer des besoins. D’abord, le premier besoin est d
 ## Prérequis
 Les conditions préalables pour exploiter efficacement ce projet varient selon l'utilisation que vous comptez en faire. Voici les recommandations spécifiques :
 
+### Téléchargement de la base de données
+
+Du fait de sa grande volumétrie (9 Go), veuillez trouver la base de données utilisée en cliquant sur ce lien qui mène directement au site du gouvernement [data.gouv.fr](https://www.data.gouv.fr/fr/datasets/open-food-facts-produits-alimentaires-ingredients-nutrition-labels/). Le fichier au format csv est celui qui est traité tout au long du projet.
+
 ### Utilisation des scripts utilisés dans cette étude :
 
 1. **Installation de Python :** Veuillez installer Python dans sa version 3.11 Vous pouvez la télécharger  sur [python.org](https://www.python.org/).
-1. **Installation de R :** Veuillez installer Python dans sa version 4.3.2 Vous pouvez la télécharger  sur [rstudio.com](https://cran.rstudio.com/bin/windows//base/old/).
 
    
 ## Structure du dépôt 
@@ -40,10 +43,7 @@ Pour Python, insérez cette ligne de commande dans le terminal :
 ```bash
 pip install -r requirements_Pyton.txt
 ```
-Pour R, ouvrez et exécutez le script suivant:
-```bash
-requirements_R.R
-```
+
 
 ## Utilisation
 

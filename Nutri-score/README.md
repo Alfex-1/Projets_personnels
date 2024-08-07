@@ -1,34 +1,31 @@
-# Analyse des ventes de produits (2023)
+# Prédiction du Nutri-Score (version 2)
 
-Pour construire une stratégie marketing fiable, il est essentiel de comprendre les habitudes de consommation des clients. Cette étude analyse statistiquement les tendances de consommation des clients. Il est donc demande de répondre à deux questions majeures :
-
-1. Existe-t-il des tendances significatives dans la vente de produits ?
-2. La fluctuation du chiffre d’affaires de 2024 restera en moyenne similaire à celle de 2023 ?
-
-Par ces questions, il faut tirer des besoins. D’abord, le premier besoin est d’analyser les achats des clients et voir si certains clients privilégies certains produits ou non et en quelle quantité. La seconde, c’est de faire des prévisions du chiffre d’affaires pour voir si la tendance de 2023 concernant le chiffre d’affaires se répète ou non.
-
+Ce  projet reprend le [projet digital](https://github.com/Alfex-1/Projet_digital) mené au sein de ma formation de Master 2.
+Cette version 2 ne revoit seulement que la partie consacrée au traitement des données et construction de modèles. Une toute nouvelle approche est présentée ici, notamment concernant le traitement des données.
+En effet, deux objectifs ont été fixés au début de ce projet :
+ 1. Optimisation du traitement des données pour **minimiser le temps de calcul des différents modèles** tout en conservant la représentativité de la base de données à disposition.
+ 2. Comparaison de 4 modèles de **boosting** pour choisir le meilleur.
 
 ## Prérequis
-Les conditions préalables pour exploiter efficacement ce projet varient selon l'utilisation que vous comptez en faire. Voici les recommandations spécifiques :
 
 ### Téléchargement de la base de données
 
-Du fait de sa grande volumétrie (9 Go), veuillez trouver la base de données utilisée en cliquant sur ce lien qui mène directement au site du gouvernement [data.gouv.fr](https://www.data.gouv.fr/fr/datasets/open-food-facts-produits-alimentaires-ingredients-nutrition-labels/). Le fichier au format csv est celui qui est traité tout au long du projet.
+Du fait de sa grande volumétrie (9 Go), il n'est pas possible de les stocker sur GitHub. De ce fait, veuillez trouver la base de données utilisée en cliquant sur ce lien qui mène directement au site du gouvernement [data.gouv.fr](https://www.data.gouv.fr/fr/datasets/open-food-facts-produits-alimentaires-ingredients-nutrition-labels/). Le fichier au format csv est celui qui est traité tout au long du projet. La création de nouveaux fichiers csv sera explicitement mentionnés dans les scripts Python.
 
-### Utilisation des scripts utilisés dans cette étude :
+### Utilisation des scripts
 
-1. **Installation de Python :** Veuillez installer Python dans sa version 3.11 Vous pouvez la télécharger  sur [python.org](https://www.python.org/).
-
+1. **Installation de Python** : Veuillez installer Python dans sa version 3.11 Vous pouvez la télécharger  sur [python.org](https://www.python.org/).
+2. **Ordre à suivre lors de la naviguation des scripts** :
+    - Le premier dossier vers lequel se diriger est le dossier "**Traitement de données**". A l'intérieur chaque script est numéroté désignant leur ordre auquel les scripts doivent être exécutés.
+    - Le second dossier est "**Développement modèles**". La logique est la même que celle utilisée précédemment.
    
 ## Structure du dépôt 
 
 - __docs__ : Le support business de présentation.      
-- __src__     
-    - **`\data`** : Dossier où on retrouve le fichier .csv étant la base de données utilisées.      
-    - **`\tools`** : Tous les codes Python et R dont un script Python dédié aux fonctions utilisées par les autres scripts       
+- __src__      
+    - **`\tools`** : Tous les scripts Python dont un dédié aux fonctions utilisées par les autres scripts       
 - __README.md__ : Le message qui décrit le projet         
-- __requirements_Pyton.txt__ : Liste des modules nécessaires à l'exécution des codes Python.  
-- __requirements_R.txt__ : Liste des modules nécessaires à l'exécution des codes R.      
+- __requirements_Pyton.txt__ : Liste des modules nécessaires à l'exécution des codes Python.      
 
 ## Installation
 
@@ -45,12 +42,14 @@ pip install -r requirements_Pyton.txt
 ```
 
 
-## Utilisation
+## Objectifs de chaque script
 
-Le script **`Analyse_factorielle.R`** effectue une Analyse Factorielle de Données Mixtes (AFDM) pour analyser s'il existe des tendances dans le comportements des clients.
-Le script **`Analyse_statistique.py`** est utilisé pour confirmer ou réfuter les hypothèses avancées avec les résultats de l'AFDM avec l'aide d'une série de tests statistiques.
-Le script **`Prévisions_chiffre_affaires.py`** fournit les codes pour la modélisation et la prévision du chiffre d'affaires.
-Le script **`Fonction.py`** répertorie toutes les fonctions Python qui servent à l'exécution des deux autres scripts Python.
+1. **`Lecture_et_pretraitement.py`** lis la base de données et effectue des premiers traitements
+2. **`Analyse_classe_d.py`** effectue un sous-échantillonage en supprimant les valeurs extrêmes de la classe majoritaire (classe D) dans l'objectif de minimiser significiativement le temps de calcul des modèles
+3. **`Traitement_val_manq.py`** impute méthodiquement les données manquantes selon les caractéristiques de chaque variable
+4. **`Rééquilibrage_données.py`** rééquilibre les classes en ajoutant autant d'observations "fictives" que possibles pour que toutes les classes soient aussi bien représentées que le classe majoritaire : ajout de données augmentant le temps de calcul des modèles.
+5. **`Choix_meilleur_modèle.py`** choisist le meilleur de boosting grâce notamment à la validation croisée et à une vérification du sur-apprentissage
+6. **`Fonctions.py`** répertorie toutes les fonctions Python qui servent à l'exécution des autres scripts.
 
 Avant d'utiliser les scripts Python, veuillez d'abord exécuter le script des fonctions :
 

@@ -84,14 +84,19 @@ X_train, X_test, y_train, y_test = train_test_split(
 xg, ada, cat, lg = XGBClassifier(random_state=42), AdaBoostClassifier(random_state=42), CatBoostClassifier(
     random_state=42, verbose=False), lgb.LGBMClassifier(random_state=42, verbosity=-1)
 
-models = [xg, ada, cat, lg]
+# models = [xg, ada, cat, lg]
 
-models_dict = {'XGBClassifier': xg, 'AdaBoostClassifier': ada,
+# models_dict = {'XGBClassifier': xg, 'AdaBoostClassifier': ada,
+               # 'CatBoostClassifier': cat, 'LGBMClassifier': lg}
+               
+models = [ada, cat, lg]
+
+models_dict = {'AdaBoostClassifier': ada,
                'CatBoostClassifier': cat, 'LGBMClassifier': lg}
 
 
 def compare_boosting(models, nb_estimators, learn_rate, gamma, l1, l2, max_depth,
-                     metric, cv=5, average_metric='macro',
+                     metric, cv=7, average_metric='macro',
                      X_train=X_train, y_train=y_train, X_test=X_test, y_test=y_test):
 
     # Dictionnaire pour stocker les meilleurs paramètres de chaque modèle
@@ -99,6 +104,7 @@ def compare_boosting(models, nb_estimators, learn_rate, gamma, l1, l2, max_depth
 
     for model in models:
         # Définir les paramètres à optimiser et leurs valeurs possibles
+        """
         if model is models[0]:
             print('XGBoost en préparation...')
             param_grid = {'n_estimators': nb_estimators,
@@ -107,21 +113,29 @@ def compare_boosting(models, nb_estimators, learn_rate, gamma, l1, l2, max_depth
                           'gamma': gamma,
                           'alpha': l1,
                           'lambda': l2}
+        """
 
-        elif model is models[1]:
+        if model is models[0]:
             print('AdaBoost en préparation...')
-            max_depth_RF = max_depth.tolist().append(None)
-            param_grid = {'estimator': [RandomForestClassifier(max_depth=max_depth_RF)],
+            """
+            if isinstance(max_depth, np.ndarray):
+                # Si max_depth est un numpy array
+                max_depth_RF = max_depth.tolist() + [None]
+            else:
+                # Si max_depth est déjà une liste
+                max_depth_RF = max_depth + [None]
+            """
+            param_grid = {'estimator': [RandomForestClassifier(max_depth=[None,6, 8,10])],
                           'n_estimators': nb_estimators,
                           'learning_rate': learn_rate}
 
-        elif model is models[2]:
+        elif model is models[1]:
             print('CatBoost en préparation...')
             param_grid = {'iterations': nb_estimators,
                           'learning_rate': learn_rate,
                           'l2_leaf_reg': l2}
 
-        elif model is models[3]:
+        elif model is models[2]:
             print('LightGBM en préparation...')
             param_grid = {'n_estimators': nb_estimators,
                           'learning_rate': learn_rate,
@@ -246,18 +260,12 @@ def compare_boosting(models, nb_estimators, learn_rate, gamma, l1, l2, max_depth
 
 
 best_params_per_model, results_per_model, max_depth_RF = compare_boosting(models=models,
-                                                                          nb_estimators=[
-                                                                              50, 60, 70],
-                                                                          learn_rate=[
-                                                                              0.5, 0.75, 1],
-                                                                          gamma=[
-                                                                              1, 3, 5],
-                                                                          l1=[1,
-                                                                              3, 5],
-                                                                          l2=[1,
-                                                                              3, 5],
-                                                                          max_depth=[
-                                                                              6, 8, 10],
+                                                                          nb_estimators=[50, 60, 70],
+                                                                          learn_rate=[0.5, 0.75, 1],
+                                                                          gamma=[1, 3, 5],
+                                                                          l1=[1,3, 5],
+                                                                          l2=[1,3, 5],
+                                                                          max_depth=[6, 8, 10],
                                                                           metric='accuracy',
                                                                           average_metric='macro')
 

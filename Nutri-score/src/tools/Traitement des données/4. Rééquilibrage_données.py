@@ -43,7 +43,7 @@ smote = SMOTE(sampling_strategy='not majority',  # 'not majority' : on ajoute de
 
 X_resampled, y_resampled = smote.fit_resample(X, y)
 
-# Convertir en DataFrame si nécessaire
+# Convertir en DataFrame
 df_resampled = pd.concat([pd.DataFrame(X_resampled), pd.DataFrame(
     {'NutriScore': y_resampled})], axis=1)
 
@@ -63,6 +63,7 @@ b    20.0
 c    20.0
 e    20.0
 Name: proportion, dtype: float64
+
 NutriScore
 a    241933   + 78 882 (+48.4%)
 d    241933   + 0
@@ -71,7 +72,7 @@ c    241933   + 23 137 (+10.6%)
 e    241933   + 56 559 (+30.5%)
 Name: count, dtype: int64
 
-Après avec resampling :
+Après resampling :
     - 1 209 665 observations,
     - Dont 256 438 observations ajoutées (resampling),
     - Soit 21.2% des observations sont "artificielles".

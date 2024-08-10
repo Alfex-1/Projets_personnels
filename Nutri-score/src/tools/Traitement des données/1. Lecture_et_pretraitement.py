@@ -16,7 +16,7 @@ pieces = []
 # Lecture du fichier CSV en morceaux avec gestion des lignes mal formées
 chunks = pd.read_csv(chemin_fichier, chunksize=chunksize, iterator=iterator,
                      sep=sep, engine='python', quoting=csv.QUOTE_NONE,
-                     usecols=lambda column: column.endswith('_100g') or column in ['nutriscore_grade', 'product_name'])
+                     usecols=lambda column: column.endswith('_100g') or column in ['nutriscore_grade'])
 
 # Parcourir chaque morceau et le stocker dans la liste
 for chunk in chunks:
@@ -67,7 +67,6 @@ nutrition-score-fr_100g    65.36
 # Suppression de nutrition-score-fr_100g qui n'a pas de sens
 # Suppression de energy_100g qui est exprimé en kj (ce qui n'est pas utilisé communément)
 del df['sodium_100g']
-del df['product_name']
 del df['nutrition-score-fr_100g']
 del df['energy_100g']
 

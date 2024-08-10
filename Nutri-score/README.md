@@ -58,47 +58,16 @@ Avant d'utiliser les scripts Python, veuillez d'abord exécuter le script des fo
 python Fonctions.py  
 ```
 
-## Description de la base
+## Stratégie de traitement
 
-- Transaction ID : le numéro de la transaction
-- Customer ID : l'idendifiant du client ayant fait son achat à la date T
-- Date : date à laquelle s'est réalisée la transaction. Les dates vont du 01/01/2023 au 01/01/2023
-- Gender : genre du client (Male ou Female) ayant réalisé la transaction
-- Age : âge du client ayant réalisé la transaction
-- Product Category : catégorie du produit acheté (Beauty, Clothing ou Electronics)
-- Quantity : quantité achetée par transaction
-- Price per Unit : prix unitaire du produit acheté
-- Total_Amount : bénéfice tiré de la transaction
+D'abord, étant donné la grande quantité de variable dans la base, je me suis rapporté à ce que je connaissais sur le Nutri-Score : il est calculé à partir des valeurs nutritionnels exprimées par 100g. Donc toutes les variables en rapport avec ceci (en plus du nutri-score en lui même) sont les seuls variables conservées.
+Les données n'ayant pas un nutri-score correct ont été également supprimés.
+Après ces traitement, une base de données a été enregistrée avec 5% de données avant de les supprimer de la base pré-traitée
+
+En temps normal, les données manquantes devraient être traitées en les supprimant ou en les imputant. Dans ce cas ce traitement sera effectué après la suppression des certaines observations de la classe D (la classe ayant le plus d'observations). L'utilité réelle de ce traitement sera expliquée lorsque viendra le temps du rééquilibrage des données. Au début, l'idée était de supprimer un certain nombre d'observations de la classe D totalement hasard. Mais étant donné que beaucoup de modèles sont sensibles aux valeurs extrêmes, autant supprimer ces données là. La détection des valeurs extrêmes s'est faite sur le plan multivarié.
+
+L'étape suivante consistait à imputer les données manquantes. L'idée était d'étudier si les données manquantes des variables dépendaient des données manquantes des autres variables. Dans les cas où les variables sont MAR ou MCAR, alors les données manquantes sont imputées par KNNImputer, sinon par IterativeImputer. CE traitement arrive après la suppression des observations de la classe D car, l'évaluation des valeurs extrêmes devait se faire sur des vraies valeurs. De plus, imputer des valeurs qui vont être supprimées ensuite est une perte de temps et d'énergie.
+
+Enfin, étant donné le désquilibre des classes évident, le rééquilibrage peut s'avérer utile pour des meilleures performances. Pour ce faire, un sur-échantillonnage a été effectué. Ce dernier créé des observations "fictives" ou synthétiques dans chaque classe afin que ces classes aient le même nombre d'observations que la classe ayant le plus (dans ce cas, la classe D). C'est pour cela qu'en premier lieu, j'ai supprimé au maximum les observations de la classe majoritaire, afin de ne pas trop gonfler artificiellement le nombre d'observations des autres classes et pour économiser les ressources lors de la construction des modèles. Le sur-échantillonnage utilise le concept de K plus proches voisins. Dans mon cas chaque observation synthétique résulte du calcul d'une interpolation entre une observation réelle de la classe associée et ses 4 plus proches voisines.
 
 ## Résultats
-
-### Analyse factorielle de données 
-
-Grâce à cette analyse, des conclusions ont pu être tirées sur l'impact qu'on le genre et l'âge des clients sur les types de produits qu'ils achètent et sur leur quantité.
-L'objectif est d'éclairer les décisions en isolant des comportements d'achat des clients, s'il en existe.
-
-Globalement, ce sont les vêtements qui sont les plus achetés et les produits électroniques qui sont les moins achetés. Ce sont d'ailleurs les clients les plus âgés qui achètent ces deux types de produits, mais les produits de beauté sont plutôt privilégiés par les femmes, contrairement aux hommes qui préfèrent les deux autres types de produits. Ensuite, les clients les plus âgés semblent privilégier les vêtements et l’électronique et les plus jeunes les produits de beauté.
-
-Enfin, les quantités vendues ne semblent être en dépendants ni de l'âge ni du genre des clients.
-
-Malheureusement, ces analyses sont peu robustes en raison de la faible représentativité des différentes variables sur le plan factorielle. D'où la nécessité de passer par des tests statistiques pour avoir des preuves des liens qui peuvent potentiellement exister.
-
-### Tests statistiques
-
-Ces tests ont pour seul objectif de confirmer ou non les observations effectuées grâce à l'analyse factorielle précédente. Cette confirmation (ou réfutation) se fait par le biais des P-Value des tests. Lorsque cette P-Value est inférieure à un certain seuil (posons 5 % : 0,05), le test démontre qu'il y a un effet. Cet effet change en fonction du test effectué. Des précisions seront faites au moment voulu.
-
-Toutes les observations précédentes ont été réfutes par les tests statistiques. Autrement dit, il n'y a pas assez de preuve statistique pour affirmer que certains produits (comme les vêtements) sont significativement privilégiés par rapport aux produits électroniques.
-Il y a néanmoins une observation qui est validée statistiquement : les quantités vendues n'ont réellement rien à voir avec l'âge des clients ni leur genre.
-
-Conclusion : même si des actions marketing et commerciales sont menées, le chiffre d'affaires peut sûrement augmenter, mais cela ne restera que marginal.
-
-## Modélisation du chiffre d'affaires
-
-Le deuxième enjeu de cette étude est d'estimer le niveau du chiffre d'affaires pour l'année 2024, au du moins le début de l'année 2024.
-Pour cela, deux modèles ont été utilisés : ARMA et GARCH. Ces modèles ont été ensuite passés dans la phase de validation pour confirmer si la modélisation était correcte mathématiquement.
-Étant donné que l'évolution du chiffre d'affaires avait une moyenne constante au fil du temps, il n'y avait aucune raison de différencier la série (technique pour rendre stationnaire une série temporelle).
-
-Cependant, même le meilleur modèle ARMA (ARMA(0,0)) n'arrive pas à capter la structure temporelle dans les données. Autrement dit, les observations sont indépendantes et identiquement distribuées autour de la moyenne qui est une constante : ce n'est que du bruit blanc. Les prévisions se font donc seulement à partir de cette moyenne constante. De plus, les résidus présentent une hétéroscédasticité : la variance des résidus change au fil du temps. Pour remédier à ce problème, le modèle GARCH permet de mieux capter cette volatilité qui peut changer selon les périodes.
-
-En développement un modèle GARCH(6,0) - donc un modèle ARCH(6) - il apparaît que des prévisions sur le long terme ne sont pas possibles car le modèle converge vers une seule valeur au bout de quelques jours. De plus, le modèle ne valide pas l'hypothèse d'hétéroscédasticité conditionnelle qui doit être présente. Autrement dit, le modèle ARCH (ou GARCH) est approprié lorsque la variance des résidus dépend de l'information passée. Ce n'est pas le cas ici.
-En conclusion : ni le modèle ARMA, ni le modèle ARCH ne sont appropriés pour cette série temporelle. L'explication peut-être que la base de données est simulée et que les valeurs sont générées aléatoirement.

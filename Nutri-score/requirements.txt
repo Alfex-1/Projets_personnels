@@ -1,5 +1,11 @@
-import pandas as pd
-import matplotlib.pyplot as plt
-from scipy.stats import chi2_contingency
-from scipy.stats import shapiro, ansari, mannwhitneyu, fligner, kruskal, spearmanr
-import pingouin as pg
+pandas
+python-csv
+numpy
+matplotlib.pyplot
+seaborn
+scikit-learn
+missingno
+imblearn
+xgboost
+lightgbm
+catboost

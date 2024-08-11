@@ -28,13 +28,11 @@ from itertools import combinations
 import statsmodels.stats.multitest as smm
 warnings.filterwarnings("ignore")
 
-
 # =============================================================================
 # Définition des fonctions
 # =============================================================================
 
 # Fonction qui évalue si une série est stationnaire ou non avec un test de Dickey Fuller
-
 
 def DickeyFuller(data, feature, pvalue, show_graph=False):
     data = data.dropna()

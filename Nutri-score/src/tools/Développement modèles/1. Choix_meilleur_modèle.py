@@ -37,10 +37,6 @@ X_train, X_test, y_train, y_test = train_test_split(
 xg, ada, cat, lg = XGBClassifier(random_state=42), AdaBoostClassifier(random_state=42), CatBoostClassifier(
     random_state=42, verbose=False), lgb.LGBMClassifier(random_state=42, verbosity=-1)
 
-models = [xg, ada, cat, lg]
-
-models_dict = {'XGBClassifier': xg, 'AdaBoostClassifier': ada,
-               'CatBoostClassifier': cat, 'LGBMClassifier': lg}
 
 best_params_per_model, results_per_model, max_depth_RF = compare_boosting(models=models,
                                                                           nb_estimators=np.arange(
@@ -61,34 +57,4 @@ best_params_per_model, results_per_model, max_depth_RF = compare_boosting(models
 
 resultats = entrainement_model_optimal(models[3], average_metric='macro')
 
-
-model = XGBClassifier(
-    n_estimators=80,
-    learning_rate=0.6,
-    gamma=0.5,
-    reg_alpha=1,
-    reg_lambda=1,
-    max_depth=10,
-    use_label_encoder=False, 
-    eval_metric='mlogloss')
-
-model.fit(X_train, y_train)
-
-# Prédiction sur l'ensemble de train
-y_pred_train = model.predict(X_train)
-
-# Prédiction sur l'ensmeble de test
-y_pred_test = model.predict(X_test)
-
-# Evaluation
-report_train = classification_report(y_train, y_pred_train, output_dict=True)
-report_test = classification_report(y_test, y_pred_test, output_dict=True)
-
-report_df_train = pd.DataFrame(report_train).transpose()*100
-report_df_test = pd.DataFrame(report_test).transpose()
-
-print("\nEvaluation sur la base de train\n")
-report_df_train
-print("\nEvaluation sur la base de test\n")
-report_df_test
 

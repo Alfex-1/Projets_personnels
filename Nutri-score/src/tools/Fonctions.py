@@ -55,7 +55,7 @@ def find_optimal_contamination(data, target_count, tol=1):
 
     return best_contamination
 
-def xgboost_models(model, nb_estimators, learn_rate, l1, l2, gamma, max_depth, metric='accuracy', average='weighted', selected_models=3, X_train=X_train, y_train=y_train, X_test=X_test, y_test=y_test):
+def xgboost_models(model, nb_estimators, learn_rate, l1, l2, gamma, max_depth, metric='accuracy', average='weighted', selected_models=3, X_train=X_train, y_train=y_train, X_test=X_test, y_test=y_test,cv=5):
     """Fonction qui effectue une validation croisée pour déterminer la meilleurs combinaisons d'hyperparamètres initialisés pour optimiser le développement d'un modèle XGBoost.
 
     Args:
@@ -73,6 +73,7 @@ def xgboost_models(model, nb_estimators, learn_rate, l1, l2, gamma, max_depth, m
         y_train (Series, optional): Valeurs d'entraînement de la variable cible. La Série par défaut est y_train.
         X_test (DataFrame, optional): Valeurs de test des variables explicatives. La DataFrame par défaut est X_test.
         y_test (Series, optional): Valeurs de test de la variable cible. La Série par défaut est y_test.
+        cv (int,optional) : Nombre de Folds. La valeur par défaut est 5.
 
     Returns:
         DataFrame : Tableau affichant les performances des k meilleurs modèles sur la base de train et celle de test.
@@ -87,7 +88,7 @@ def xgboost_models(model, nb_estimators, learn_rate, l1, l2, gamma, max_depth, m
     }
 
     grid = GridSearchCV(estimator=model, param_grid=param_grid,
-                        cv=7, scoring=metric, n_jobs=1)
+                        cv=cv, scoring=metric, n_jobs=1)
     grid_result = grid.fit(X_train, y_train)
 
     # Conserver les données dans un DataFrame
@@ -183,7 +184,7 @@ def xgboost_models(model, nb_estimators, learn_rate, l1, l2, gamma, max_depth, m
 
     return models_results
 
-def adaboost_models(model,nb_estimators, learn_rate, max_depth_RF, metric='accuracy', average="weighted", selected_models=3, X_train=X_train, y_train=y_train, cv=5):
+def adaboost_models(model,nb_estimators, learn_rate, max_depth_RF, metric='accuracy', average="weighted", selected_models=3, cv=5, X_train=X_train, y_train=y_train):
     results = []
 
     for depth in max_depth_RF:
@@ -290,7 +291,7 @@ def adaboost_models(model,nb_estimators, learn_rate, max_depth_RF, metric='accur
 
     return models_results
 
-def catboost_models(model,nb_estimators, learn_rate, l2, max_depth, metric='accuracy', average="weighted", selected_models=3, model=model, X_train=X_train, y_train=y_train, X_test=X_test, y_test=y_test):
+def catboost_models(model,nb_estimators, learn_rate, l2, max_depth, metric='accuracy', average="weighted", selected_models=3, cv=5, X_train=X_train, y_train=y_train, X_test=X_test, y_test=y_test):
     param_grid = {
         'iterations': nb_estimators,
         'learning_rate': learn_rate,
@@ -299,7 +300,7 @@ def catboost_models(model,nb_estimators, learn_rate, l2, max_depth, metric='accu
     }
 
     grid = GridSearchCV(estimator=model, param_grid=param_grid,
-                        cv=5, scoring=metric, n_jobs=8)
+                        cv=cv, scoring=metric, n_jobs=8)
     grid_result = grid.fit(X_train, y_train)
 
     # Conserver les données dans un DataFrame
@@ -389,7 +390,7 @@ def catboost_models(model,nb_estimators, learn_rate, l2, max_depth, metric='accu
 
     return models_results
 
-def lightgbm_models(model,nb_estimators, learn_rate, l1, l2, max_depth, metric='accuracy', average='weighted', selected_models=3, model=model, X_train=X_train, y_train=y_train, X_test=X_test, y_test=y_test):
+def lightgbm_models(model,nb_estimators, learn_rate, l1, l2, max_depth, metric='accuracy', average='weighted', selected_models=3, cv=5, X_train=X_train, y_train=y_train, X_test=X_test, y_test=y_test):
     param_grid = {
         'n_estimators': nb_estimators,
         'learning_rate': learn_rate,
@@ -399,7 +400,7 @@ def lightgbm_models(model,nb_estimators, learn_rate, l1, l2, max_depth, metric='
     }
 
     grid = GridSearchCV(estimator=model, param_grid=param_grid,
-                        cv=5, scoring=metric, n_jobs=8)
+                        cv=cv, scoring=metric, n_jobs=8)
     grid_result = grid.fit(X_train, y_train)
 
     # Conserver les données dans un DataFrame

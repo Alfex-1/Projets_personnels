@@ -1,60 +1,145 @@
-# Packages
-import matplotlib.pyplot as plt
-import pandas as pd
-import numpy as np
-from sklearn.model_selection import train_test_split, GridSearchCV
-from xgboost import XGBClassifier
-from sklearn.metrics import accuracy_score, f1_score, recall_score, roc_curve, auc
-import seaborn as sns
-from sklearn.ensemble import AdaBoostClassifier
-import lightgbm as lgb
-from catboost import CatBoostClassifier
-from sklearn.metrics import classification_report
-
 # Fixer la graine pour la reproductibilité
 np.random.seed(42)
 
-# Importation de la base
-chemin_fichier = r"C:\Données_nutriscore_v3\5Data_no_miss_unbalanced.csv"
+# Importation de la base non-équilibrée et d ela base équilibrée
 
-df = pd.read_csv(chemin_fichier, sep=',')
+df1 = pd.read_csv(r"C:\Données_nutriscore_v3\5Data_no_miss_unbalanced.csv", sep=',')
+df2 = pd.read_csv(r"C:\Données_nutriscore_v3\5Data_no_miss_balanced.csv", sep=',')
 
-# Vérification
-df.info()
-print(df.isnull().sum())
-df.describe()
+# Encodage de la variable cible : 1 à 4
+df1, infos1 = encoding_all_data(df, reverse=True)
+df2, infos2 = encoding_all_data(df, reverse=True)
 
-df, infos = encoding_all_data(df, reverse=True)
+# Division des données de la base non-équilibrée
+X1 = df1.drop('NutriScore', axis=1)  # Variables prédictives
+y1 = df1['NutriScore']  # Variable cible
 
-# Division des données
-X = df.drop('NutriScore', axis=1)  # Variables prédictives
-y = df['NutriScore']  # Variable cible
+X_train1, X_test1, y_train1, y_test1 = train_test_split(X1, y1, test_size=0.2, random_state=42)
 
-X_train, X_test, y_train, y_test = train_test_split(
-    X, y, test_size=0.2, random_state=42)
+# Division des données de la base équilibrée
+X2 = df2.drop('NutriScore', axis=1)  # Variables prédictives
+y2 = df2['NutriScore']  # Variable cible
+
+X_train2, X_test2, y_train2, y_test2 = train_test_split(X2, y2, test_size=0.2, random_state=42)
+
 
 # Initialiser tous les modèles
 xg, ada, cat, lg = XGBClassifier(random_state=42), AdaBoostClassifier(random_state=42), CatBoostClassifier(
     random_state=42, verbose=False), lgb.LGBMClassifier(random_state=42, verbosity=-1)
 
+# Chercher les modèles optimaux sur la base non-EQUILIBREE
 
-best_params_per_model, results_per_model, max_depth_RF = compare_boosting(models=models,
-                                                                          nb_estimators=np.arange(
-                                                                              50, 80, 5),
-                                                                          learn_rate=np.arange(
-                                                                              0.1, 1.1, 0.1),
-                                                                          gamma=np.arange(
-                                                                              0, 11, 1),
-                                                                          l1=np.arange(
-                                                                              0, 11, 1),
-                                                                          l2=np.arange(
-                                                                              0, 11, 1),
-                                                                          max_depth=np.arange(
-                                                                              1, 11, 1),
-                                                                          cv=7,
-                                                                          metric='f1',
-                                                                          average_metric='weighted')
+# XGBoost
+xg_non_eq = xgboost_models(model=xg,
+               nb_estimators=np.arange(10,70,5),
+               learn_rate = np.arange(0.1,1.1,0.1),
+               l1 = np.arange(0,2.2,0.2),
+               l2 = np.arange(0,2.2,0.2),
+               gamma = np.arange(0,2.2,0.2),
+               max_depth = np.arange (2,12,2),
+               metric='f1_score',
+               average='weighted',
+               selected_models=3,
+               X_train=X_train1, y_train=y_train1, X_test=X_test1, y_test=y_test1)
 
-resultats = entrainement_model_optimal(models[3], average_metric='macro')
+# Adaboost
 
+ada_non_eq = adaboost_models(model=ada,
+    nb_estimators=np.arange(10,70,5),
+    learn_rate=np.arange(0.1,1.1,0.1),
+    max_depth_RF=np.arange (2,12,2),
+    metric='f1_score',
+    verage="weighted",
+    selected_models=3,
+    X_train=X_train1, y_train=y_train1, X_test=X_test1, y_test=y_test1)
 
+# Catboost
+
+cat_non_eq = catboost_models(
+    model=model,
+    nb_estimators=np.arange(10,70,5),
+    learn_rate=np.arange(0.1,1.1,0.1),
+    l2=np.arange(0,2.2,0.2),
+    max_depth = np.arange (2,12,2),
+    metric='f1_score',
+    average="weighted",
+    selected_models=3,
+    X_train=X_train1, y_train=y_train1, X_test=X_test1, y_test=y_test1)
+
+# LightGBM
+
+lgb_non_eq = lightgbm_models(
+    model = model,
+    nb_estimators=np.arange(10,70,5),
+    learn_rate=np.arange(0.1,1.1,0.1),
+    l1=np.arange(0,2.2,0.2),
+    l2=np.arange(0,2.2,0.2),
+    max_depth=np.arange (2,12,2),
+    metric='f1_score',
+    average='weighted',
+    selected_models=3,
+    X_train=X_train1, y_train=y_train1, X_test=X_test1, y_test=y_test1)
+
+# Chercher les modèles optimaux sur la base EQUILIBRE
+
+# XGBoost
+xg_eq = xgboost_models(model=xg,
+               nb_estimators=np.arange(10,70,5),
+               learn_rate = np.arange(0.1,1.1,0.1),
+               l1 = np.arange(0,2.2,0.2),
+               l2 = np.arange(0,2.2,0.2),
+               gamma = np.arange(0,2.2,0.2),
+               max_depth = np.arange (2,12,2),
+               metric='precision',
+               average='macro',
+               selected_models=3,
+               X_train=X_train2, y_train=y_train2, X_test=X_test2, y_test=y_test2)
+
+# Adaboost
+
+ada_eq = adaboost_models(model=ada,
+    nb_estimators=np.arange(10,70,5),
+    learn_rate=np.arange(0.1,1.1,0.1),
+    max_depth_RF=np.arange (2,12,2),
+    metric='precision',
+    verage="macro",
+    selected_models=3,
+    X_train=X_train2, y_train=y_train2, X_test=X_test2, y_test=y_test2)
+
+# Catboost
+
+cat_eq = catboost_models(
+    model=model,
+    nb_estimators=np.arange(10,70,5),
+    learn_rate=np.arange(0.1,1.1,0.1),
+    l2=np.arange(0,2.2,0.2),
+    max_depth = np.arange (2,12,2),
+    metric='precision',
+    average="macro",
+    selected_models=3,
+    X_train=X_train2, y_train=y_train2, X_test=X_test2, y_test=y_test2)
+
+# LightGBM
+
+lgb_eq = lightgbm_models(
+    model = model,
+    nb_estimators=np.arange(10,70,5),
+    learn_rate=np.arange(0.1,1.1,0.1),
+    l1=np.arange(0,2.2,0.2),
+    l2=np.arange(0,2.2,0.2),
+    max_depth=np.arange (2,12,2),
+    metric='precision',
+    average='macro',
+    selected_models=3,
+    X_train=X_train2, y_train=y_train2, X_test=X_test2, y_test=y_test2)
+
+# Développement du modèle optimal
+
+eval_model,model_opti = model_opti(model="xg",
+                                   n_estimators=0,
+                                   learning_rate=0,
+                                   max_depth=0,
+                                   l1=0,
+                                   l2=0,
+                                   gamma=0,
+                                   average="weighted")

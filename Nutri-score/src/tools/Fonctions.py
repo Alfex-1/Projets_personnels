@@ -185,6 +185,25 @@ def xgboost_models(model, nb_estimators, learn_rate, l1, l2, gamma, max_depth, m
     return models_results
 
 def adaboost_models(model,nb_estimators, learn_rate, max_depth_RF, metric='accuracy', average="weighted", selected_models=3, cv=5, X_train=X_train, y_train=y_train):
+    """Fonction qui effectue une validation croisée pour déterminer la meilleurs combinaisons d'hyperparamètres initialisés pour optimiser le développement d'un modèle Adaboost.
+
+    Args:
+        model (AdaBoostClassifier): le modèle Adaboost instancié.
+        nb_estimators (int): nombre d'estimateurs.
+        learn_rate (int or float): taux d'apprentissage (valeurs possibles : de 0 à 1).
+        max_depth (int): profondeur maximale de chaque estimateur.
+        metric (str, optional): Métrique pour  l'évaluation des modèles. Defaults to 'accuracy'.
+        average (str, optional): Type de calcul du moyenne effectué sur les données. La valeur par défaut est 'weighted'.
+        selected_models (int, optional): Nombre de modèle sélectionné pour le top. La valeur par défaut est 3 (top 3 des meilleurs modèles).
+        X_train (DataFrame, optional): Valeurs d'entraînement des variables explicatives. La DataFrame par défaut est X_train.
+        y_train (Series, optional): Valeurs d'entraînement de la variable cible. La Série par défaut est y_train.
+        X_test (DataFrame, optional): Valeurs de test des variables explicatives. La DataFrame par défaut est X_test.
+        y_test (Series, optional): Valeurs de test de la variable cible. La Série par défaut est y_test.
+        cv (int,optional) : Nombre de Folds. La valeur par défaut est 5.
+
+    Returns:
+        DataFrame : Tableau affichant les performances des k meilleurs modèles sur la base de train et celle de test.
+    """
     results = []
 
     for depth in max_depth_RF:
@@ -292,6 +311,26 @@ def adaboost_models(model,nb_estimators, learn_rate, max_depth_RF, metric='accur
     return models_results
 
 def catboost_models(model,nb_estimators, learn_rate, l2, max_depth, metric='accuracy', average="weighted", selected_models=3, cv=5, X_train=X_train, y_train=y_train, X_test=X_test, y_test=y_test):
+    """Fonction qui effectue une validation croisée pour déterminer la meilleurs combinaisons d'hyperparamètres initialisés pour optimiser le développement d'un modèle catboost.
+
+    Args:
+        model (CatBoostClassifier): le modèle Catboost instancié.
+        nb_estimators (int): nombre d'estimateurs.
+        learn_rate (int or float): taux d'apprentissage (valeurs possibles : de 0 à 1).
+        l2 (int or float): coefficient de la pénalité L2.
+        max_depth (int): profondeur maximale de chaque estimateur.
+        metric (str, optional): Métrique pour  l'évaluation des modèles. Defaults to 'accuracy'.
+        average (str, optional): Type de calcul du moyenne effectué sur les données. La valeur par défaut est 'weighted'.
+        selected_models (int, optional): Nombre de modèle sélectionné pour le top. La valeur par défaut est 3 (top 3 des meilleurs modèles).
+        X_train (DataFrame, optional): Valeurs d'entraînement des variables explicatives. La DataFrame par défaut est X_train.
+        y_train (Series, optional): Valeurs d'entraînement de la variable cible. La Série par défaut est y_train.
+        X_test (DataFrame, optional): Valeurs de test des variables explicatives. La DataFrame par défaut est X_test.
+        y_test (Series, optional): Valeurs de test de la variable cible. La Série par défaut est y_test.
+        cv (int,optional) : Nombre de Folds. La valeur par défaut est 5.
+
+    Returns:
+        DataFrame : Tableau affichant les performances des k meilleurs modèles sur la base de train et celle de test.
+    """
     param_grid = {
         'iterations': nb_estimators,
         'learning_rate': learn_rate,
@@ -391,6 +430,27 @@ def catboost_models(model,nb_estimators, learn_rate, l2, max_depth, metric='accu
     return models_results
 
 def lightgbm_models(model,nb_estimators, learn_rate, l1, l2, max_depth, metric='accuracy', average='weighted', selected_models=3, cv=5, X_train=X_train, y_train=y_train, X_test=X_test, y_test=y_test):
+    """Fonction qui effectue une validation croisée pour déterminer la meilleurs combinaisons d'hyperparamètres initialisés pour optimiser le développement d'un modèle LightGBM.
+
+    Args:
+        model (LGBMClassifier): le modèle LightGBM instancié.
+        nb_estimators (int): nombre d'estimateurs.
+        learn_rate (int or float): taux d'apprentissage (valeurs possibles : de 0 à 1).
+        l1 (int or float): coefficient de la pénalité L1.
+        l2 (int or float): coefficient de la pénalité L2.
+        max_depth (int): profondeur maximale de chaque estimateur.
+        metric (str, optional): Métrique pour  l'évaluation des modèles. Defaults to 'accuracy'.
+        average (str, optional): Type de calcul du moyenne effectué sur les données. La valeur par défaut est 'weighted'.
+        selected_models (int, optional): Nombre de modèle sélectionné pour le top. La valeur par défaut est 3 (top 3 des meilleurs modèles).
+        X_train (DataFrame, optional): Valeurs d'entraînement des variables explicatives. La DataFrame par défaut est X_train.
+        y_train (Series, optional): Valeurs d'entraînement de la variable cible. La Série par défaut est y_train.
+        X_test (DataFrame, optional): Valeurs de test des variables explicatives. La DataFrame par défaut est X_test.
+        y_test (Series, optional): Valeurs de test de la variable cible. La Série par défaut est y_test.
+        cv (int,optional) : Nombre de Folds. La valeur par défaut est 5.
+
+    Returns:
+        DataFrame : Tableau affichant les performances des k meilleurs modèles sur la base de train et celle de test.
+    """
     param_grid = {
         'n_estimators': nb_estimators,
         'learning_rate': learn_rate,
@@ -492,7 +552,7 @@ def lightgbm_models(model,nb_estimators, learn_rate, l1, l2, max_depth, metric='
 
     return models_results
 
-def model_opti(model,n_estimators, learning_rate,max_depth, l1=0, l2=0, gamma=0, average="weighted", X_train=X_train, y_train=y_train, X_test=X_test, y_test=y_test, X=X):
+def model_opti(model,n_estimators, learning_rate,max_depth, l1=0, l2=0, gamma=0, average="weighted", X_train=X_train, y_train=y_train, X_test=X_test, y_test=y_test):
     """Entraînement d'un modèle de boosting à partir des hyperparamètres choisit.
 
     Args:
@@ -574,18 +634,13 @@ def model_opti(model,n_estimators, learning_rate,max_depth, l1=0, l2=0, gamma=0,
     test_f1 = f1_score(y_test, y_test_pred, average=average)
     test_recall = recall_score(y_test, y_test_pred, average=average)
 
-    accuracy = accuracy_score(y, y_pred)
-    precision = precision_score(y, y_pred, average=average)
-    f1 = f1_score(y, y_pred, average=average)
-    recall = recall_score(y, y_pred, average=average)
-
     # Créer une DataFrame pour stocker les résultats
     metrics_df = pd.DataFrame({
-        'Base': ['Apprentissage', 'Validation', 'Complète'],
-        'Accuracy': [train_accuracy, test_accuracy, accuracy],
-        'Precision': [train_precision, test_precision, precision],
-        'F1': [train_f1, test_f1, f1],
-        'Recall': [train_recall, test_recall, recall]
+        'Base': ['Apprentissage', 'Validation'],
+        'Accuracy': [train_accuracy, test_accuracy],
+        'Precision': [train_precision, test_precision],
+        'F1': [train_f1, test_f1],
+        'Recall': [train_recall, test_recall]
     })
 
     metrics_df[['Accuracy', 'Precision', 'F1', 'Recall']] *= 100

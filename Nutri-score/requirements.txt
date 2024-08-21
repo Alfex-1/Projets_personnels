@@ -1,11 +1,7 @@
 pandas
-python-csv
 numpy
-matplotlib.pyplot
+matplotlib
 seaborn
 scikit-learn
 missingno
 imblearn
-xgboost
-lightgbm
-catboost

@@ -14,6 +14,8 @@ from xgboost import XGBClassifier
 from sklearn.ensemble import AdaBoostClassifier
 import lightgbm as lgb
 from catboost import CatBoostClassifier
+from sklearn.neural_network import MLPClassifier
+from itertools import permutations, combinations
 
 def find_optimal_contamination(data, target_count, tol=1):
     """Trouve la contamination optimale pour obtenir un nombre pr�cis d'individus apr�s nettoyage.
@@ -55,7 +57,52 @@ def find_optimal_contamination(data, target_count, tol=1):
 
     return best_contamination
 
-def xgboost_models(model, nb_estimators, learn_rate, l1, l2, gamma, max_depth, metric='accuracy', average='weighted', selected_models=3, X_train=X_train, y_train=y_train, X_test=X_test, y_test=y_test,cv=5):
+def encoding_all_data(data,reverse=False):
+    import pandas as pd
+    from sklearn.preprocessing import LabelEncoder
+    # Séparer les variables numériques
+    numeric_columns = data.select_dtypes(include=[float, int]).columns
+    non_numeric_data = data.drop(columns=numeric_columns)
+
+    # Encodage des variables non numériques
+    class_info = {}  # Dictionnaire pour stocker les informations sur les classes
+    infos = pd.DataFrame(columns=["Variable", "Code", "Modalité"])
+
+    for column in non_numeric_data.columns:
+        le = LabelEncoder()
+        non_numeric_data[column] = le.fit_transform(non_numeric_data[column])
+
+        # Stocker les informations sur les classes dans le dictionnaire
+        class_info[column] = {
+            'label_encoder': le,
+            'classes': list(le.classes_)
+        }
+
+        # Récupérer les classes correspondantes
+        if reverse:
+            classes = list(reversed(le.classes_))
+        else:
+            classes = le.classes_
+
+        # Afficher les correspondances entre les codes et les classes
+        for code, classe in enumerate(classes):
+            print(f"Colonnes '{column}', Classe {code} : {classe}")
+            variable = column
+            code = code
+            classe = classe
+            
+            infos = infos._append({
+                "Variable": variable,
+                "Code": code,
+                "Modalité": classe
+            }, ignore_index=True)      
+
+    # Réintégrer les variables numériques dans le jeu de données encodé
+    encoded_data = pd.concat([non_numeric_data, data[numeric_columns]], axis=1)
+
+    return encoded_data, infos
+
+def xgboost_models(model, nb_estimators, learn_rate, l1, l2, gamma, max_depth, X_train,X_test,y_train,y_test,metric='accuracy', average='weighted', selected_models=3,cv=5):
     """Fonction qui effectue une validation croisée pour déterminer la meilleurs combinaisons d'hyperparamètres initialisés pour optimiser le développement d'un modèle XGBoost.
 
     Args:
@@ -184,7 +231,7 @@ def xgboost_models(model, nb_estimators, learn_rate, l1, l2, gamma, max_depth, m
 
     return models_results
 
-def adaboost_models(model,nb_estimators, learn_rate, max_depth_RF, metric='accuracy', average="weighted", selected_models=3, cv=5, X_train=X_train, y_train=y_train):
+def adaboost_models(model,nb_estimators, learn_rate, max_depth_RF,  X_train,X_test,y_train,y_test,metric='accuracy', average="weighted", selected_models=3, cv=5):
     """Fonction qui effectue une validation croisée pour déterminer la meilleurs combinaisons d'hyperparamètres initialisés pour optimiser le développement d'un modèle Adaboost.
 
     Args:
@@ -310,7 +357,7 @@ def adaboost_models(model,nb_estimators, learn_rate, max_depth_RF, metric='accur
 
     return models_results
 
-def catboost_models(model,nb_estimators, learn_rate, l2, max_depth, metric='accuracy', average="weighted", selected_models=3, cv=5, X_train=X_train, y_train=y_train, X_test=X_test, y_test=y_test):
+def catboost_models(model,nb_estimators, learn_rate, l2, max_depth,  X_train,X_test,y_train,y_test,metric='accuracy', average="weighted", selected_models=3, cv=5):
     """Fonction qui effectue une validation croisée pour déterminer la meilleurs combinaisons d'hyperparamètres initialisés pour optimiser le développement d'un modèle catboost.
 
     Args:
@@ -429,7 +476,7 @@ def catboost_models(model,nb_estimators, learn_rate, l2, max_depth, metric='accu
 
     return models_results
 
-def lightgbm_models(model,nb_estimators, learn_rate, l1, l2, max_depth, metric='accuracy', average='weighted', selected_models=3, cv=5, X_train=X_train, y_train=y_train, X_test=X_test, y_test=y_test):
+def lightgbm_models(model,nb_estimators, learn_rate, l1, l2, max_depth,  X_train,X_test,y_train,y_test, metric='accuracy', average='weighted', selected_models=3, cv=5):
     """Fonction qui effectue une validation croisée pour déterminer la meilleurs combinaisons d'hyperparamètres initialisés pour optimiser le développement d'un modèle LightGBM.
 
     Args:
@@ -552,7 +599,7 @@ def lightgbm_models(model,nb_estimators, learn_rate, l1, l2, max_depth, metric='
 
     return models_results
 
-def model_opti(model,n_estimators, learning_rate,max_depth, l1=0, l2=0, gamma=0, average="weighted", X_train=X_train, y_train=y_train, X_test=X_test, y_test=y_test):
+def model_opti(model,n_estimators, learning_rate,max_depth, X_train,X_test,y_train,y_test,l1=0, l2=0, gamma=0, average="weighted"):
     """Entraînement d'un modèle de boosting à partir des hyperparamètres choisit.
 
     Args:
@@ -584,34 +631,28 @@ def model_opti(model,n_estimators, learning_rate,max_depth, l1=0, l2=0, gamma=0,
         max_depth=max_depth,
         random_state=42)
     
-    elif:
-        model == "ada":
-            selected_model = AdaBoostClassifier(
-        estimator=RandomForestClassifier(
-            max_depth=max_depth_RF, random_state=42),
-        n_estimators=n_estimators,
-        learning_rate=learning_rate,
-        random_state=42)
+    elif model == "ada":
+            selected_model = AdaBoostClassifier(estimator=RandomForestClassifier(max_depth=max_depth_RF, random_state=42),
+                                                n_estimators=n_estimators,
+                                                learning_rate=learning_rate,
+                                                random_state=42)
     
-    elif:
-        model == "cat":
+    elif model == "cat":
             selected_model = CatBoostClassifier(
                 n_estimators=n_estimators,
                 learning_rate=learning_rate,
                 l2_leaf_reg=l2,
                 depth=max_depth,
                 random_state=42)
-    elif:
-        model == "lgb":
-            selected_model = lgb.LGBMClassifier(
-                n_estimators=n_estimators,
-                learning_rate=learning_rate,
-                reg_alpha=l1,
-                reg_lambda=l2,
-                max_depth=max_depth,
-                random_state=42,
-                verbose=-1)
-    elif:
+    elif model == "lgb":
+        selected_model = lgb.LGBMClassifier(n_estimators=n_estimators,
+                                            learning_rate=learning_rate,
+                                            reg_alpha=l1,
+                                            reg_lambda=l2,
+                                            max_depth=max_depth,
+                                            random_state=42,
+                                            verbose=-1)
+    else:
         print("Veuillez choisir un nom de modèle parmi 'xgb', 'ada', 'cat' et 'lgb'")       
 
     # Entraîner le modèle sur les données d'entraînement
@@ -670,3 +711,156 @@ def model_opti(model,n_estimators, learning_rate,max_depth, l1=0, l2=0, gamma=0,
     plt.show()
 
     return metrics_df,selected_model
+
+def pred_metrics(model,X_train,X_test,y_train,y_test,method="Regression",average='weighted'):
+    # Prédictions sur l'ensemble d'apprentissage et de test
+    y_pred_train = model.predict(X_train)
+    y_pred_test = model.predict(X_test)
+    
+    if method == 'Regression':
+        # Calcul des métriques de régression
+        train_rmse = round(root_mean_squared_error(y_train, y_pred_train),2)
+        test_rmse = round(root_mean_squared_error(y_test, y_pred_test),2)
+        diff_rmse = round(abs(train_rmse-test_rmse),2)
+    
+        train_mae = round(mean_absolute_error(y_train, y_pred_train),2)
+        test_mae = round(mean_absolute_error(y_test, y_pred_test),2)
+        diff_mae = round(abs(train_mae-test_mae),2)
+        
+        train_mae_pct = round(mean_absolute_percentage_error(y_train, y_pred_train)*100,2)
+        test_mae_pct = round(mean_absolute_percentage_error(y_test, y_pred_test)*100,2)
+        diff_mae_pct = round(abs(train_mae_pct-test_mae_pct),2)
+    
+        train_r2 = round(r2_score(y_train, y_pred_train)*100,2)
+        test_r2 = round(r2_score(y_test, y_pred_test)*100,2)
+        diff_r2 = round(abs(train_r2-test_r2),2)
+        
+        metrics = pd.DataFrame({
+            'RMSE_apprentissage': [train_rmse],
+            'RMSE_validation': [test_rmse],
+            'RMSE_diff_apprentissage_validation': [diff_rmse],
+            'MAE_apprentissage': [train_mae],
+            'MAE_validation': [test_mae],
+            'MAE_diff_apprentissage_validation': [diff_mae],
+            'MAE_pct_apprentissage': [train_mae_pct],
+            'MAE_pct_validation': [test_mae_pct],
+            'MAE_pct_diff_apprentissage_validation': [diff_mae_pct],
+            'R2_apprentissage': [train_r2],
+            'R2_validation': [test_r2],
+            'R2_diff_apprentissage_validation': [diff_r2]
+            }, index=[0])
+
+        
+    elif method == 'Classification':
+        # Calcul des métriques de classification
+        train_accuracy = round(accuracy_score(y_train, y_pred_train) * 100, 2)
+        test_accuracy = round(accuracy_score(y_test, y_pred_test) * 100, 2)
+        diff_accuracy = round(abs(train_accuracy - test_accuracy), 2)
+
+        train_precision = round(precision_score(y_train, y_pred_train, average=average) * 100, 2)
+        test_precision = round(precision_score(y_test, y_pred_test, average=average) * 100, 2)
+        diff_precision = round(abs(train_precision - test_precision), 2)
+
+        train_recall = round(recall_score(y_train, y_pred_train, average=average) * 100, 2)
+        test_recall = round(recall_score(y_test, y_pred_test, average=average) * 100, 2)
+        diff_recall = round(abs(train_recall - test_recall), 2)
+
+        train_f1 = round(f1_score(y_train, y_pred_train, average=average) * 100, 2)
+        test_f1 = round(f1_score(y_test, y_pred_test, average=average) * 100, 2)
+        diff_f1 = round(abs(train_f1 - test_f1), 2)
+        
+        metrics = pd.DataFrame({
+            'Accuracy_apprentissage': [train_accuracy],
+            'Accuracy_validation': [test_accuracy],
+            'Accuracy_diff_apprentissage_validation': [diff_accuracy],
+            'Precision_apprentissage': [train_precision],
+            'Precision_validation': [test_precision],
+            'Precision_diff_apprentissage_validation': [diff_precision],
+            'Recall_apprentissage': [train_recall],
+            'Recall_validation': [test_recall],
+            'Recall_diff_apprentissage_validation': [diff_recall],
+            'F1_apprentissage': [train_f1],
+            'F1_validation': [test_f1],
+            'F1_diff_apprentissage_validation': [diff_f1]}, index=[0]) 
+        
+    else:
+        print("La méthode choisie doit être de 'Regression' ou de 'Classification' seulement.")
+
+    return metrics
+        
+
+def CV_parameters_classif(model,hidden_layer_sizes, activation, alpha, learning_rate, X_train,X_test,y_train,y_test,metric='neg_mean_absolute_error',average='weighted',selected_model=3):
+    # Définir les paramètres à optimiser et leurs valeurs possibles
+    param_grid = {
+    'hidden_layer_sizes': hidden_layer_sizes,
+    'activation': activation,
+    'alpha': alpha,
+    'learning_rate_init': learning_rate
+}
+
+    # Utiliser GridSearchCV
+    grid = GridSearchCV(estimator=model, param_grid=param_grid, cv=5, scoring=metric,n_jobs=8)
+    grid_result = grid.fit(X_train, y_train)
+
+    # Créer une DataFrame à partir des résultats de la grille
+    results_df = pd.DataFrame({
+        'Hidden Layers': grid_result.cv_results_['param_hidden_layer_sizes'],
+        'Activation': grid_result.cv_results_['param_activation'],
+        'Alpha': grid_result.cv_results_['param_alpha'],
+        'Learning_rate' : grid_result.cv_results_['param_learning_rate_init'],        
+        'Rank': grid_result.cv_results_['rank_test_score'],
+        'Std Test Score': grid_result.cv_results_['std_test_score']
+    })
+    results_df['Std Test Score'] = round(results_df['Std Test Score'], 2)
+    results_df = results_df.sort_values(by='Rank', ascending=True).head(selected_model)
+    
+    # DataFrame pour stocker les hyperparamètres métriques des modèles sélectionnés
+    results_df_classif = pd.DataFrame()
+    
+    # Boucle sur les meilleurs modèles
+    for idx, row in results_df.iterrows():
+        # Construire le modèle avec les paramètres du modèle actuel
+        model = MLPClassifier(
+            hidden_layer_sizes=row['Hidden Layers'],
+            activation=row['Activation'],
+            alpha=row['Alpha'],
+            solver='adam',
+            learning_rate_init=float(row['Learning_rate'])?
+            max_iter = 1000)
+        
+        model.fit(X_train, y_train)
+        
+        # Calcul des métriques
+        metrics = pred_metrics(model, X_train, X_test, y_train, y_test, method='Classification',average=average)
+        
+        # Ajouter les hyperparamètres au DataFrame des métriques
+        metrics['Hidden Layers'] = [row['Hidden Layers']]
+        metrics['Activation'] = [row['Activation']]
+        metrics['Alpha'] = [row['Alpha']]
+        metrics['Learning_rate'] = [row['Learning_rate']]
+        metrics['Rank'] = [row['Rank']]
+        
+        # Ajouter les résultats au DataFrame général
+        results_df_classif = pd.concat([results_df_classif, metrics], ignore_index=True)
+        
+    return results_df_classif
+
+def generate_layer_combinations(max_layers, max_neurons):
+    # Chiffres à utiliser pour les tailles de couches
+    sizes = list(range(1, max_neurons + 1))
+    
+    # Liste pour stocker les combinaisons
+    layer_combinations = []
+
+    # Une couche
+    layer_combinations.extend([(size,) for size in sizes])
+
+    # Plusieurs couches
+    for n_layers in range(1, max_layers + 1):
+        for combo in combinations(sizes, n_layers):
+            layer_combinations.extend(permutations(combo, n_layers))
+    
+    # Supprimer les doublons (permutations peuvent créer des doublons)
+    unique_combinations = list(set(layer_combinations))
+    
+    return unique_combinations

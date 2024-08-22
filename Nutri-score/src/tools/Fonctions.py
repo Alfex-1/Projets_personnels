@@ -4,12 +4,10 @@ import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 from sklearn.model_selection import train_test_split, GridSearchCV
-from sklearn.metrics import accuracy_score, f1_score, recall_score, roc_curve, auc,classification_report
+from sklearn.metrics import precision_score,accuracy_score, f1_score, recall_score, roc_curve, auc,classification_report
 from sklearn.experimental import enable_iterative_imputer
 from sklearn.impute import MissingIndicator, KNNImputer, SimpleImputer,IterativeImputer
-from sklearn.ensemble import IsolationForest
-import missingno as msno
-from imblearn.over_sampling import SMOTE
+from sklearn.ensemble import IsolationForest,RandomForestClassifier
 from xgboost import XGBClassifier
 from sklearn.ensemble import AdaBoostClassifier
 import lightgbm as lgb
@@ -55,7 +53,7 @@ def find_optimal_contamination(data, target_count, tol=1):
 
     return best_contamination
 
-def xgboost_models(model, nb_estimators, learn_rate, l1, l2, gamma, max_depth, metric='accuracy', average='weighted', selected_models=3, X_train=X_train, y_train=y_train, X_test=X_test, y_test=y_test,cv=5):
+def xgboost_models(model, nb_estimators, learn_rate, l1, l2, gamma, max_depth, X_train,y_train,y_test,metric='accuracy', average='weighted', selected_models=3,cv=5):
     """Fonction qui effectue une validation croisée pour déterminer la meilleurs combinaisons d'hyperparamètres initialisés pour optimiser le développement d'un modèle XGBoost.
 
     Args:
@@ -184,7 +182,7 @@ def xgboost_models(model, nb_estimators, learn_rate, l1, l2, gamma, max_depth, m
 
     return models_results
 
-def adaboost_models(model,nb_estimators, learn_rate, max_depth_RF, metric='accuracy', average="weighted", selected_models=3, cv=5, X_train=X_train, y_train=y_train):
+def adaboost_models(model,nb_estimators, learn_rate, max_depth_RF,X_train, y_train,X_test,y_test,metric='accuracy', average="weighted", selected_models=3, cv=5):
     """Fonction qui effectue une validation croisée pour déterminer la meilleurs combinaisons d'hyperparamètres initialisés pour optimiser le développement d'un modèle Adaboost.
 
     Args:
@@ -261,8 +259,7 @@ def adaboost_models(model,nb_estimators, learn_rate, max_depth_RF, metric='accur
 
         # Calculer et stocker les métriques
         accuracy = accuracy_score(y_test, y_pred)
-        precision = precision_score(
-            y_test, y_pred, average=average)
+        precision = precision_score(y_test, y_pred, average=average)
         f1 = f1_score(y_test, y_pred, average=average)
         recall = recall_score(y_test, y_pred, average=average)
 
@@ -310,7 +307,7 @@ def adaboost_models(model,nb_estimators, learn_rate, max_depth_RF, metric='accur
 
     return models_results
 
-def catboost_models(model,nb_estimators, learn_rate, l2, max_depth, metric='accuracy', average="weighted", selected_models=3, cv=5, X_train=X_train, y_train=y_train, X_test=X_test, y_test=y_test):
+def catboost_models(model,nb_estimators, learn_rate, l2, max_depth, X_train, y_train, X_test, y_test,metric='accuracy', average="weighted", selected_models=3, cv=5):
     """Fonction qui effectue une validation croisée pour déterminer la meilleurs combinaisons d'hyperparamètres initialisés pour optimiser le développement d'un modèle catboost.
 
     Args:
@@ -429,7 +426,7 @@ def catboost_models(model,nb_estimators, learn_rate, l2, max_depth, metric='accu
 
     return models_results
 
-def lightgbm_models(model,nb_estimators, learn_rate, l1, l2, max_depth, metric='accuracy', average='weighted', selected_models=3, cv=5, X_train=X_train, y_train=y_train, X_test=X_test, y_test=y_test):
+def lightgbm_models(model,nb_estimators, learn_rate, l1, l2, max_depth, X_train, y_train, X_test, y_test,metric='accuracy', average='weighted', selected_models=3, cv=5):
     """Fonction qui effectue une validation croisée pour déterminer la meilleurs combinaisons d'hyperparamètres initialisés pour optimiser le développement d'un modèle LightGBM.
 
     Args:
@@ -552,7 +549,7 @@ def lightgbm_models(model,nb_estimators, learn_rate, l1, l2, max_depth, metric='
 
     return models_results
 
-def model_opti(model,n_estimators, learning_rate,max_depth, l1=0, l2=0, gamma=0, average="weighted", X_train=X_train, y_train=y_train, X_test=X_test, y_test=y_test):
+def model_opti(model,n_estimators, learning_rate,max_depth, X_train, y_train, X_test, y_test,l1=0, l2=0, gamma=0, average="weighted"):
     """Entraînement d'un modèle de boosting à partir des hyperparamètres choisit.
 
     Args:
@@ -584,25 +581,20 @@ def model_opti(model,n_estimators, learning_rate,max_depth, l1=0, l2=0, gamma=0,
         max_depth=max_depth,
         random_state=42)
     
-    elif:
-        model == "ada":
-            selected_model = AdaBoostClassifier(
-        estimator=RandomForestClassifier(
-            max_depth=max_depth_RF, random_state=42),
-        n_estimators=n_estimators,
-        learning_rate=learning_rate,
-        random_state=42)
+    elif model == "ada":
+            selected_model = AdaBoostClassifier(estimator=RandomForestClassifier(max_depth=max_depth, random_state=42),
+                                                n_estimators=n_estimators,
+                                                learning_rate=learning_rate,
+                                                random_state=42)
     
-    elif:
-        model == "cat":
+    elif model == "cat":
             selected_model = CatBoostClassifier(
                 n_estimators=n_estimators,
                 learning_rate=learning_rate,
                 l2_leaf_reg=l2,
                 depth=max_depth,
                 random_state=42)
-    elif:
-        model == "lgb":
+    elif model == "lgb":
             selected_model = lgb.LGBMClassifier(
                 n_estimators=n_estimators,
                 learning_rate=learning_rate,
@@ -611,7 +603,7 @@ def model_opti(model,n_estimators, learning_rate,max_depth, l1=0, l2=0, gamma=0,
                 max_depth=max_depth,
                 random_state=42,
                 verbose=-1)
-    elif:
+    else:
         print("Veuillez choisir un nom de modèle parmi 'xgb', 'ada', 'cat' et 'lgb'")       
 
     # Entraîner le modèle sur les données d'entraînement
@@ -620,7 +612,6 @@ def model_opti(model,n_estimators, learning_rate,max_depth, l1=0, l2=0, gamma=0,
     # Utiliser le modèle pour faire des prédictions sur la base d'apprentissage et de test
     y_train_pred = selected_model.predict(X_train)
     y_test_pred = selected_model.predict(X_test)
-    y_pred = selected_model.predict(X)
 
     # Calculer les métriques pour la base d'apprentissage
     train_accuracy = accuracy_score(y_train, y_train_pred)

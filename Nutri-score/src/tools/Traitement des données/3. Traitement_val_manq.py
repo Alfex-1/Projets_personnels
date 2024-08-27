@@ -5,9 +5,10 @@ import matplotlib.pyplot as plt
 from sklearn.experimental import enable_iterative_imputer
 from sklearn.impute import MissingIndicator, KNNImputer, SimpleImputer
 from sklearn.impute import IterativeImputer
+import seaborn as sns
 
 # Importation de la base
-chemin_fichier = r"C:\Données_nutriscore_v3\4Data_dclass_treat.csv"
+chemin_fichier = r"\\172.20.3.5\vol_modelisation_001\modelisation\MOD_DONNEES_SATELLITAIRES\Stage\Alex\Autres\Traitement des données\Données_nutriscore_v3\4Data_dclass_treat.csv"
 
 df = pd.read_csv(chemin_fichier, sep=',')
 
@@ -29,29 +30,26 @@ msno.dendrogram(df2)
 plt.show()
 
 # Imputation par KNN pour les variables qui sont MAR et MCAR
-knn_imputer = KNNImputer(n_neighbors=4)
+knn_imputer = KNNImputer(n_neighbors=3)
 
-col_knn = ['Glucides', 'Graisses', 'Dont_sucres']
+col_knn = ['Energie_kcal', 'Graisses', 'Dont_graisse_saturées',
+           'Glucides', 'Dont_sucres', 'Fibres', 'Protéines', 'Sel']
 
 df[col_knn] = knn_imputer.fit_transform(df[col_knn])
+
 
 miss2 = pd.DataFrame(round((df.isnull().sum() / len(df)) * 100, 2))
 miss2 = miss2.sort_values(by=[0], ascending=False)
 print(miss2)
 
-# Imputation pour les données MNAR avec IterativeImputer
-simple_imputer = IterativeImputer(
-    max_iter=20, random_state=42, sample_posterior=True)
+test = df.describe()
 
-col_it = ['Energie_kcal', 'Dont_graisse_saturées',
-          'Fibres', 'Protéines', 'Sel']
+# Détection des valeurs négatives : seulement 8 lignes concernées
+df_neg = df[(df['Dont_sucres'] < 0) | (df['Fibres'] < 0)]
 
-# Imputer les colonnes
-df[col_it] = simple_imputer.fit_transform(df[col_it])
-
-miss3 = pd.DataFrame(round((df.isnull().sum() / len(df)) * 100, 2))
-miss3 = miss3.sort_values(by=[0], ascending=False)
-print(miss3)
+# Remplacer les valeurs négatives par 0 dans les colonnes 'Dont_sucres' et 'Fibres'
+df['Dont_sucres'] = df['Dont_sucres'].map(lambda x: 0 if x < 0 else x)
+df['Fibres'] = df['Fibres'].map(lambda x: 0 if x < 0 else x)
 
 # Enregistrer les données complètes
-df.to_csv(r"C:\Données_nutriscore_v3\5Data_no_miss_unbalanced.csv", index=False)
+df.to_csv(r"\\172.20.3.5\vol_modelisation_001\modelisation\MOD_DONNEES_SATELLITAIRES\Stage\Alex\Autres\Traitement des données\Données_nutriscore_v3\5Data_no_miss_unbalanced.csv", index=False)

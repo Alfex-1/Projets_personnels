@@ -8,6 +8,8 @@ from sklearn.metrics import precision_score,accuracy_score, f1_score, recall_sco
 from sklearn.experimental import enable_iterative_imputer
 from sklearn.impute import MissingIndicator, KNNImputer, SimpleImputer,IterativeImputer
 from sklearn.ensemble import IsolationForest
+from itertools import permutations, combinations
+from sklearn.neural_network import MLPClassifier
 
 def find_optimal_contamination(data, target_count, tol=1):
     """Trouve la contamination optimale pour obtenir un nombre pr�cis d'individus apr�s nettoyage.
@@ -48,6 +50,71 @@ def find_optimal_contamination(data, target_count, tol=1):
             low = contamination + tol / len(data)
 
     return best_contamination
+
+def encoding_all_data(data,reverse=False):
+    import pandas as pd
+    from sklearn.preprocessing import LabelEncoder
+    # Séparer les variables numériques
+    numeric_columns = data.select_dtypes(include=[float, int]).columns
+    non_numeric_data = data.drop(columns=numeric_columns)
+
+    # Encodage des variables non numériques
+    class_info = {}  # Dictionnaire pour stocker les informations sur les classes
+    infos = pd.DataFrame(columns=["Variable", "Code", "Modalité"])
+
+    for column in non_numeric_data.columns:
+        le = LabelEncoder()
+        non_numeric_data[column] = le.fit_transform(non_numeric_data[column])
+
+        # Stocker les informations sur les classes dans le dictionnaire
+        class_info[column] = {
+            'label_encoder': le,
+            'classes': list(le.classes_)
+        }
+
+        # Récupérer les classes correspondantes
+        if reverse:
+            classes = list(reversed(le.classes_))
+        else:
+            classes = le.classes_
+
+        # Afficher les correspondances entre les codes et les classes
+        for code, classe in enumerate(classes):
+            print(f"Colonnes '{column}', Classe {code} : {classe}")
+            variable = column
+            code = code
+            classe = classe
+            
+            infos = infos._append({
+                "Variable": variable,
+                "Code": code,
+                "Modalité": classe
+            }, ignore_index=True)      
+
+    # Réintégrer les variables numériques dans le jeu de données encodé
+    encoded_data = pd.concat([non_numeric_data, data[numeric_columns]], axis=1)
+
+    return encoded_data, infos
+
+def generate_layer_combinations(max_layers, max_neurons):
+    # Chiffres à utiliser pour les tailles de couches
+    sizes = list(range(2, max_neurons + 1))
+    
+    # Liste pour stocker les combinaisons
+    layer_combinations = []
+
+    # Une couche
+    layer_combinations.extend([(size,) for size in sizes])
+
+    # Plusieurs couches
+    for n_layers in range(2, max_layers + 1):
+        for combo in combinations(sizes, n_layers):
+            layer_combinations.extend(permutations(combo, n_layers))
+    
+    # Supprimer les doublons (permutations peuvent créer des doublons)
+    unique_combinations = list(set(layer_combinations))
+    
+    return unique_combinations
 
 def pred_metrics(model,X_train,X_test,y_train,y_test,method="Regression",average='weighted'):
     # Prédictions sur l'ensemble d'apprentissage et de test
@@ -133,7 +200,7 @@ def CV_parameters_classif(model,hidden_layer_sizes, activation, alpha, learning_
 }
 
     # Utiliser GridSearchCV
-    grid = GridSearchCV(estimator=model, param_grid=param_grid, cv=5, scoring=metric,n_jobs=8)
+    grid = GridSearchCV(estimator=model, param_grid=param_grid, cv=5, scoring=metric,n_jobs=4)
     grid_result = grid.fit(X_train, y_train)
 
     # Créer une DataFrame à partir des résultats de la grille

@@ -3,7 +3,7 @@ np.random.seed(42)
 
 # Importation de la base non-equilibree et d ela base equilibree
 
-df1 = pd.read_csv(r"C:\Donnees_nutriscore_v3\5Data_no_miss_unbalanced.csv", sep=',')
+df1 = pd.read_csv(r"\\172.20.3.5\vol_modelisation_001\modelisation\MOD_DONNEES_SATELLITAIRES\Stage\Alex\Autres\Traitement des données\Données_nutriscore_v3\6Data_no_miss_noextrem_unbalanced.csv", sep=',')
 df2 = pd.read_csv(r"C:\Donnees_nutriscore_v3\5Data_no_miss_balanced.csv", sep=',')
 
 
@@ -23,19 +23,12 @@ y2 = df2['NutriScore']  # Variable cible
 
 X_train2, X_test2, y_train2, y_test2 = train_test_split(X2, y2, test_size=0.2, random_state=42)
 
-
-# Initialiser tous les modeles
-xg, ada, cat, lg = XGBClassifier(random_state=42), AdaBoostClassifier(random_state=42), CatBoostClassifier(
-    random_state=42, verbose=False), lgb.LGBMClassifier(random_state=42, verbosity=-1)
-
-# Chercher les modeles optimaux sur la base non-EQUILIBREE
-
 # Initialiser le modèle
 mlp = MLPClassifier(solver='adam',max_iter = 1000)
 
 # Chercher le MLP optimal sur leux bases non-EQUILIBREE
 
-hidden_layer_sizes = generate_layer_combinations(max_layers=4, max_neurons=4)
+hidden_layer_sizes = generate_layer_combinations(max_layers=5, max_neurons=5)
 activation = ['tanh', 'relu']
 alpha = np.arange(0.1,1.1,0.1)
 learning_rate = np.arange(0.1, 1.1, 0.1)

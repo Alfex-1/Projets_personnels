@@ -6,7 +6,6 @@ csv.field_size_limit(500 * 1024 * 1024)
 chemin_fichier = r"C:\Données_nutriscore_v1\1Data_brut.csv"
 
 # Paramètres optionnels pour gérer la taille du fichier
-# Nombre de lignes à lire à la fois (vous pouvez ajuster cela en fonction de la mémoire disponible)
 chunksize = 100000
 iterator = True  # Permet la lecture en morceaux
 sep = "\t"
@@ -28,12 +27,11 @@ df = pd.concat(pieces, ignore_index=True)
 # Affichage des premières lignes du DataFrame
 print(df.head())
 
-# Base de dnnées qu'avec les données (variables) utiles (aucun traitement encore)
-df.to_csv(r"C:\Données_nutriscore_v1\2Data_usefull_feature_brut.csv", index=False)
+# Base de données qu'avec les données (variables) utiles (aucun traitement encore)
+chemin_nvlles_donnnees = r"C:\Données_nutriscore_v1\2Data_usefull_feature_brut.csv"
+df.to_csv(chemin_nvlles_donnnees, index=False)
 
 # Suppression des données manquantes
-df = pd.read_csv(r"C:\Données_nutriscore_v1\2Data_usefull_feature_brut.csv")
-
 miss = pd.DataFrame(round((df.isnull().sum() / len(df)) * 100, 2))
 miss = miss.sort_values(by=[0], ascending=False)
 

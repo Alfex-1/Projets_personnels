@@ -8,8 +8,10 @@ from sklearn.metrics import precision_score,accuracy_score, f1_score, recall_sco
 from sklearn.experimental import enable_iterative_imputer
 from sklearn.impute import MissingIndicator, KNNImputer, SimpleImputer,IterativeImputer
 from sklearn.ensemble import IsolationForest
-from itertools import permutations, combinations
 from sklearn.neural_network import MLPClassifier
+from itertools import permutations, combinations
+from imblearn.over_sampling import SMOTE
+
 
 def find_optimal_contamination(data, target_count, tol=1):
     """Trouve la contamination optimale pour obtenir un nombre pr�cis d'individus apr�s nettoyage.

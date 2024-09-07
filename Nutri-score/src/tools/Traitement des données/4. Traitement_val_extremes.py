@@ -1,13 +1,10 @@
-import pandas as pd
-import numpy as np
-import matplotlib.pyplot as plt
-from sklearn.impute import KNNImputer
-import seaborn as sns
+# Importation
+df = pd.read_csv(r"C:\Données_nutriscore_v3\5Data_no_miss_unbalanced.csv")
 
-df = pd.read_csv(r"\\172.20.3.5\vol_modelisation_001\modelisation\MOD_DONNEES_SATELLITAIRES\Stage\Alex\Autres\Traitement des données\Données_nutriscore_v3\5Data_no_miss_unbalanced.csv")
-
+# Base dans le nutri-score
 df_no_nutri = df.drop(columns=['NutriScore'])
 
+# Visualisation de l'existance de valeurs aberrantes et/ou extrêmes
 for i in df_no_nutri.columns:
     plt.figure(figsize=(10, 6))
     sns.boxplot(data=df, x="NutriScore", y=i)
@@ -26,7 +23,7 @@ for column in df.select_dtypes(include=[np.number]).columns:
     IQR = Q3 - Q1
     threshold = Q3 + 1.5 * IQR
     
-    # Identifier les valeurs aberrantes
+    # Identifier les valeurs aberrantes et/ou extrêmes
     aberrantes = df[column] > threshold
     
     # Compter le nombre d'aberrations pour cette colonne
@@ -47,6 +44,7 @@ col_knn = ['Glucides', 'Graisses', 'Dont_sucres',
 
 df[col_knn] = knn_imputer.fit_transform(df[col_knn])
 
+# Vérification s'il n'y a pas des données aberrantes et/ou extrêmes
 for i in df_no_nutri.columns:
     plt.figure(figsize=(10, 6))
     sns.boxplot(data=df, x="NutriScore", y=i)
@@ -54,10 +52,11 @@ for i in df_no_nutri.columns:
     plt.xlabel('Nutri-score')
     plt.ylabel(i)
     plt.show()
-    
+
+# Suppression des données illogiques (impossible d'avoir une masse de glucides/100g dépassant les 100g)
 df2 = df[df['Glucides'] < 100]
 
-
+# Vérification
 df2_no_nutri = df2.drop(columns=['NutriScore'])
 for i in df2_no_nutri.columns:
     plt.figure(figsize=(10, 6))
@@ -69,4 +68,4 @@ for i in df2_no_nutri.columns:
 
 
 # Enregistrer les donnees
-df2.to_csv(r"\\172.20.3.5\vol_modelisation_001\modelisation\MOD_DONNEES_SATELLITAIRES\Stage\Alex\Autres\Traitement des données\Données_nutriscore_v3\6Data_no_miss_noextrem_unbalanced.csv", index=False)
+df2.to_csv(r"C:\Données_nutriscore_v3\6Data_no_miss_noextrem_unbalanced.csv", index=False)

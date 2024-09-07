@@ -1,9 +1,5 @@
-# Packages
-import pandas as pd
-from imblearn.over_sampling import SMOTE
-
 # Importation de la base
-chemin_fichier = r"\\172.20.3.5\vol_modelisation_001\modelisation\MOD_DONNEES_SATELLITAIRES\Stage\Alex\Autres\Traitement des données\Données_nutriscore_v3\6Data_no_miss_noextrem_unbalanced.csv"
+chemin_fichier = r"C:\Données_nutriscore_v3\6Data_no_miss_noextrem_unbalanced.csv"
 
 df = pd.read_csv(chemin_fichier, sep=',')
 
@@ -80,4 +76,4 @@ Après resampling :
 
 # Enregistrer les données
 df_resampled.to_csv(
-    r"\\172.20.3.5\vol_modelisation_001\modelisation\MOD_DONNEES_SATELLITAIRES\Stage\Alex\Autres\Traitement des données\Données_nutriscore_v3\7Data_no_miss_balanced.csv", index=False)
+    r"C:\Données_nutriscore_v3\7Data_no_miss_balanced.csv", index=False)

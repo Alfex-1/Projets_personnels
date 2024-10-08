@@ -243,6 +243,7 @@ def CV_parameters_classif(model,hidden_layer_sizes, activation, alpha, learning_
         metrics['Activation'] = [row['Activation']]
         metrics['Alpha'] = [row['Alpha']]
         metrics['Learning_rate'] = [row['Learning_rate']]
+        metrics['Std Test Score'] = [row['Std Test Score']]
         metrics['Rank'] = [row['Rank']]
         
         # Ajouter les résultats au DataFrame général

@@ -3,8 +3,8 @@ np.random.seed(42)
 
 # Importation de la base non-equilibree et d ela base equilibree
 
-df1 = pd.read_csv(r"\\172.20.3.5\vol_modelisation_001\modelisation\MOD_DONNEES_SATELLITAIRES\Stage\Alex\Autres\Traitement des données\Données_nutriscore_v3\6Data_no_miss_noextrem_unbalanced.csv", sep=',')
-df2 = pd.read_csv(r"C:\Donnees_nutriscore_v3\5Data_no_miss_balanced.csv", sep=',')
+df1 = pd.read_csv(r"C:\Donnees_nutriscore_v3\6Data_no_miss_noextrem_unbalanced.csv", sep=',')
+df2 = pd.read_csv(r"C:\Donnees_nutriscore_v3\7Data_no_miss_balanced.csv", sep=',')
 
 df1 = df1.iloc[:int(len(df1)/2+0.5), :]
 df2 = df2.iloc[:int(len(df1)/2+0.5), :]

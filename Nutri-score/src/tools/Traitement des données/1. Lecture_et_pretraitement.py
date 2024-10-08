@@ -117,7 +117,7 @@ rename_dict = {
 
 df2 = df2.rename(columns=rename_dict)
 
-# Enregistrer 5% des observatiosn dans une nouvelle base et les enkever de la base initiale
+# Enregistrer 5% des observatiosn dans une nouvelle base et les enlever de la base initiale
 nvlle_base = df2.sample(frac=0.05)
 
 percentages = round(

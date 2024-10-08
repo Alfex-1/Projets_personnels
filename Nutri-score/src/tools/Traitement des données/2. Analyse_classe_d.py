@@ -30,9 +30,7 @@ optimal_contamination = find_optimal_contamination(
     data=df_d_no_na_ns, target_count=218796-len(df_d_na), tol=5)
 
 # Appliquer l'Isolation Forest
-iso_forest = IsolationForest(
-    contamination=0.5, random_state=42)
-iso_forest.fit_predict(df_d_no_na_ns)
+iso_forest = IsolationForest(contamination=0.5, random_state=42)
 
 # Prédire les anomalies (1 pour normal, -1 pour anomalie)
 anomaly_predictions = iso_forest.predict(df_d_no_na_ns)

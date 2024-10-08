@@ -1,4 +1,4 @@
-# Prédiction du Nutri-Score (version 2)
+# Modélisation du prix des maisons de l'Etat de l'Iowa (USA)
 
 Ce projet traite de la modélisation du prix de près de 3000 maisons de l'Etat de l'Iowa (USA). Par cette modélisation, l'objectif était double.
 D'abord, l'exploration et le traitement des données à disposition pour sélectionner les variables pertinentes après avoir traité les valeurs manquantes et détecter les anomalies.
@@ -40,9 +40,9 @@ pip install -r requirements_Pyton.txt
 
 ## Objectifs de chaque script
 
-1. **`Developpement_modeles.py`** évalue l'impact des anomalies dans les performances d'une regression linéaire et évalue les performances d'une régression polynomiale d'ordre 2
+1. **`Developpement_modeles.py`** évalue l'impact des anomalies dans les performances d'une régression linéaire et évalue les performances d'une régression polynomiale d'ordre 2.
 2. **`Fonctions.py`** répertorie toutes les fonctions Python qui servent à l'exécution des autres scripts.
-3. **`Traitement.py`** effectue une exploration des données puis impute les données manquantes, sélectionne les variables pertinentes et détecte les anomalies. Il enregistre également la base de données traitées en y incluant la variable indicatrice désignant les observations qui sont des anomalies (i.e. des observations extrêmes et/ou aberrantes sur le plan multivarié)
+3. **`Traitement.py`** effectue une exploration des données puis impute les données manquantes, sélectionne les variables pertinentes et détecte les anomalies. Il enregistre également la base de données traitées en y incluant la variable indicatrice désignant les observations qui sont des anomalies (i.e. des observations extrêmes et/ou aberrantes sur le plan multivarié).
 
 Avant d'utiliser les scripts Python, veuillez d'abord exécuter le script des fonctions :
 
@@ -60,15 +60,15 @@ Concernant les variables qualitatives et variables quantitatives discrètes, deu
 
 Une fois que la pré-sélection est effectuée, les valeurs manquantes ont été imputées par estimation du K plus proche voisins (KNN) avec K=3 et pondérés par la distance entre chaque valeur manquante et leurs 3 plus proches voisins. En temps normal, ce ne sont pas les KNN qui sont utilisées pour imputer TOUTES les valeurs manquantes. Cependant, étant donné que l'algorithme qui complète les KNN est en phase expérimentale, ce sont les KNN qui se chargent de faire tout le travail.
 
-L'étape suivante était d'explorer les données (quantitatives continues) pour se donner une idée de la quantité de données extrêmes existante au sein des données. Cette proportion s'est visuellement estimée à 5 %. Un algorithme a ensuite détecté, sur le plan multivarié, quel étaient les individus qui constituaient les 5 % : quelles observations sont des anomalies ?
+L'étape suivante était d'explorer les données (quantitatives continues) pour se donner une idée de la quantité de données extrêmes existantes au sein des données. Cette proportion s'est visuellement estimée à 5 %. Un algorithme a ensuite détecté, sur le plan multivarié, quel étaient les individus qui constituaient les 5 % : quelles observations sont des anomalies ?
 Ces anomalies ne seront pas traitées, mais seront tout de même utilisées pour évaluer leur impact sur les performances du modèle développé.
 
 Ensuite, comme les variables qualitatives restantes ne sont pas numériques, il a fallu les encoder. Pour cela, des variables ont été créées autant qu'il existe de modalités dans chaque variable. L'idée est que pour chaque observation, une nouvelle colonne est exprimée avec la valeur "1" si la modalité correspondante est présente, et "0" sinon. Cela permet de transformer des variables catégorielles en un format compréhensible par les algorithmes de machine learning tout en préservant l'information de chaque modalité.
 
-Maintenant, les données sont entièrement "compréhensibles" par un modèle. Même si une pré-sélection a eu lieu, ce n'est pas suffisant, car il en reste 27, ce qui est encore trop. L'idéal sera d'en avoir maximum 10, pour éviter le sur-ajustement. De plus, la pré-sélection s'est uniquement réalisé sur le plan univarié. Donc, une dernière sélection des variables est donc été fait sur le plan multivarié, pour prendre en compte des relations entre variables. Cette sélection se fait à partir de l'évaluation des performances d'un Random Forest par validation croisée avec l'élimination itérative de variable. Ainsi, les variables conservées minimisent l'erreur du Random Forest.
+Maintenant, les données sont entièrement "compréhensibles" par un modèle. Même si une pré-sélection a eu lieu, ce n'est pas suffisant, car il en reste 27, ce qui est encore trop. L'idéal sera d'en avoir maximum 10, pour éviter le sur-ajustement. De plus, la pré-sélection s'est uniquement réalisée sur le plan univarié. Donc, une dernière sélection des variables est donc été fait sur le plan multivarié, pour prendre en compte des relations entre variables. Cette sélection se fait à partir de l'évaluation des performances d'un Random Forest par validation croisée avec l'élimination itérative de variable. Ainsi, les variables conservées minimisent l'erreur du Random Forest.
 
 ## Stratégie de modélisation
 
-L'objectif était de construire un modèle simple puis d'aller vers un modèle un peu plus complèxe. Dans cette optique, une régression linéaire a été développée d'une part pour l'ensemble des données (anomalies comprises) et d'autre part sans les anomalies. À première vue, le modèle sans les anomalies affichait de meilleures performances en termes de critère d'information (AIC, BIC) et de variance expliquée (R² ajusté). Pour les deux modèles, une vérification du respect des hypothèses était de rigueur. Il semblerait encore une fois que le modèle sans anomalies respecte un peu mieux les hypothèses que l'autre, mais pas de manière significative. De même, lorsque les erreurs de prévision sont comparées.
+L'objectif était de construire un modèle simple puis d'aller vers un modèle un peu plus complexe. Dans cette optique, une régression linéaire a été développée d'une part pour l'ensemble des données (anomalies comprises) et d'autre part sans les anomalies. À première vue, le modèle sans les anomalies affichait de meilleures performances en termes de critère d'information (AIC, BIC) et de variance expliquée (R² ajusté). Pour les deux modèles, une vérification du respect des hypothèses était de rigueur. Il semblerait encore une fois que le modèle sans anomalies respecte un peu mieux les hypothèses que l'autre, mais pas de manière significative. De même, lorsque les erreurs de prévision sont comparées.
 
 Ensuite, les performances d'une régression polynomiale d'ordre 2 ont été évaluées. Cela semblait être une bonne idée, car il n'existe pas de relation entre les variables explicatives et la variable cible. Au final, la régression linéaire affiche de meilleures performances.

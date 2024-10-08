@@ -47,7 +47,7 @@ requirements_R.R
 
 ## Utilisation
 
-Le script **`Analyse_factorielle.R`** effectue une Analyse Factorielle de Données Mixtes (AFDM) pour analyser s'il existe des tendances dans le comportements des clients.
+Le script **`Analyse_factorielle.R`** effectue une Analyse Factorielle de Données Mixtes (AFDM) pour analyser s'il existe des tendances dans le comportement des clients.
 Le script **`Analyse_statistique.py`** est utilisé pour confirmer ou réfuter les hypothèses avancées avec les résultats de l'AFDM avec l'aide d'une série de tests statistiques.
 Le script **`Prévisions_chiffre_affaires.py`** fournit les codes pour la modélisation et la prévision du chiffre d'affaires.
 Le script **`Fonction.py`** répertorie toutes les fonctions Python qui servent à l'exécution des deux autres scripts Python.
@@ -88,7 +88,7 @@ Malheureusement, ces analyses sont peu robustes en raison de la faible représen
 
 Ces tests ont pour seul objectif de confirmer ou non les observations effectuées grâce à l'analyse factorielle précédente. Cette confirmation (ou réfutation) se fait par le biais des P-Value des tests. Lorsque cette P-Value est inférieure à un certain seuil (posons 5 % : 0,05), le test démontre qu'il y a un effet. Cet effet change en fonction du test effectué. Des précisions seront faites au moment voulu.
 
-Toutes les observations précédentes ont été réfutes par les tests statistiques. Autrement dit, il n'y a pas assez de preuve statistique pour affirmer que certains produits (comme les vêtements) sont significativement privilégiés par rapport aux produits électroniques.
+Toutes les observations précédentes ont été réfutées par les tests statistiques. Autrement dit, il n'y a pas assez de preuve statistique pour affirmer que certains produits (comme les vêtements) sont significativement privilégiés par rapport aux produits électroniques.
 Il y a néanmoins une observation qui est validée statistiquement : les quantités vendues n'ont réellement rien à voir avec l'âge des clients ni leur genre.
 
 Conclusion : même si des actions marketing et commerciales sont menées, le chiffre d'affaires peut sûrement augmenter, mais cela ne restera que marginal.

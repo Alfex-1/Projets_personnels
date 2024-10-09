@@ -99,7 +99,7 @@ for column in df_freq.columns:
     
 # Supprimer les variables ayant des modalités qui change très peu
 col_drop = ['Lot Shape','Bldg Type','House Style','Heating','Garage Type',
-            'Bsmt Half Bath','Bsmt Full Bath','Kitchen AbvGr']
+            'Bsmt Half Bath','Bsmt Full Bath','Kitchen AbvGr'] # 8 variables rejettées (55 restantes)
 
 df = df.drop(columns=col_drop) # Variables qualitatives supprimées
 
@@ -169,7 +169,7 @@ df_no_anomaly = df_quant[df_quant['anomaly'] != -1]
 # Supprimer la colonne 'anomaly' des DataFrames
 df_no_anomaly = df_no_anomaly.drop(columns=['anomaly'])
 
-print(len(df_quant)-len(df_no_anomaly)) # 125 des 2930 observations sont des valeurs extrêmes (soit 4.27%)
+print(len(df_quant)-len(df_no_anomaly)) # 147 des 2930 observations sont des valeurs extrêmes (soit 5,02%, comme prévu)
 
 # Explorer les valeurs extrêmes
 df_anomaly = df_quant[df_quant['anomaly'] == -1]
@@ -225,28 +225,40 @@ del df['anomaly']
 del df_no_anomaly['anomaly']
 
 # =============================================================================
-# Dernière sélection des variables
+# Autres sélections des variables
 # =============================================================================
 
-# Elimination des variables par validation croisée
-rejected_variables = feature_elimination_cv(data=df, target='SalePrice', scoring="rmse",
-                                            test_size=1/3, cv=7, min_features_to_select=10)
+# Elimination des variables avec une méthode univariée
+rejected_variables = feature_elimination_kbest(data=df, target='SalePrice', test_size=1/3,k=20)
+rejected_variables2 = feature_elimination_kbest(data=df_no_anomaly, target='SalePrice', test_size=1/3, k=20)
 
-rejected_variables2 = feature_elimination_cv(data=df_no_anomaly, target='SalePrice', scoring="rmse",
-                                            test_size=1/3, cv=7, min_features_to_select=10)
+not_in_2 = [var for var in rejected_variables if var not in rejected_variables2]
+not_in_1 = [var for var in rejected_variables2 if var not in rejected_variables]
+# Même nombre de variables (69) supprimées mais 2 variables diffèrent
 
 df_new_col = df.drop(columns=rejected_variables)
-df_new_col_no_anom = df.drop(columns=rejected_variables2)
+df_new_col_no_anom = df_no_anomaly.drop(columns=rejected_variables2)
+
+# Elimination des variables par validation croisée
+rejected_variables = feature_elimination_cv(data=df_new_col, target='SalePrice', model = LinearRegression(),
+                                            scoring="rmse", test_size=1/3, cv=15, min_features_to_select=10)
+
+rejected_variables2 = feature_elimination_cv(data=df_new_col_no_anom, target='SalePrice', model = LinearRegression(),
+                                             scoring="rmse", test_size=1/3, cv=15, min_features_to_select=10)
+
+df_new_col = df_new_col.drop(columns=rejected_variables)
+df_new_col_no_anom = df_new_col_no_anom.drop(columns=rejected_variables2)
 
 # Vérifier si les deux listes de variables supprimées sont similiares
-rejected_variables == rejected_variables2
 len(rejected_variables) == len(rejected_variables2)
-# Elles sont identiques
+len(rejected_variables) # 10 Variables supprimées : 11 restantes
+len(rejected_variables2) # 10 variables supprimées : 11 restantes
+
+# Combien de variables sont communes entre les deux bases ?
+not_in_2 = [var for var in df_new_col.columns if var not in df_new_col_no_anom.columns]
+not_in_1 = [var for var in df_new_col_no_anom.columns if var not in df_new_col.columns]
+# 10 variables sont communes
 
 # Pour enregistrement
-df = pd.read_csv(r"C:\Projets_personnels\Prix_immobilier_Iowa\src\data\Data_treat_with_extrem.csv")
-col_liste = df_new_col.columns.tolist()
-df2 = df[col_liste]
-df2.loc[:,'anomaly'] = df.loc[:,'anomaly']
-
-# df2.to_csv(r"C:\Projets_personnels\Prix_immobilier_Iowa\src\data\Data_selected_col.csv",index=False)
+df_new_col.to_csv(r"C:\Projets_personnels\Prix_immobilier_Iowa\src\data\Data_selected_col_with_anom.csv",index=False)
+df_new_col_no_anom.to_csv(r"C:\Projets_personnels\Prix_immobilier_Iowa\src\data\Data_selected_col_without_anom.csv",index=False)

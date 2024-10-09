@@ -4,16 +4,20 @@
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
+import missingno as msno
 import seaborn as sns
-from sklearn.model_selection import train_test_split
+import statsmodels.api as sm
+import statsmodels.stats.api as sms
+from statsmodels.stats.stattools import durbin_watson
+from sklearn.model_selection import train_test_split, KFold, cross_val_score
+from sklearn.linear_model import LinearRegression
 from sklearn.experimental import enable_iterative_imputer
 from sklearn.impute import KNNImputer
 from sklearn.ensemble import IsolationForest, RandomForestRegressor, RandomForestClassifier
-import missingno as msno
-from sklearn.preprocessing import LabelEncoder, OneHotEncoder
+from sklearn.preprocessing import LabelEncoder, OneHotEncoder, PolynomialFeatures
 from statsmodels.stats.outliers_influence import variance_inflation_factor
 from sklearn.feature_selection import chi2, VarianceThreshold, RFECV, SelectKBest, f_classif, f_regression
-from sklearn.metrics import make_scorer, mean_squared_error, mean_absolute_error, accuracy_score, recall_score, f1_score
+from sklearn.metrics import make_scorer, mean_squared_error, mean_absolute_error, accuracy_score, recall_score, f1_score, mean_absolute_percentage_error, root_mean_squared_error
 
 # =============================================================================
 # Fonctions
@@ -156,30 +160,65 @@ def knn_impute_categorical(df, column_name, n_neighbors=3, weights='distance'):
     
     return df[column_name]
 
-def feature_elimination_cv(data, target, method="regression", scoring="rmse",min_features_to_select=1,test_size=1/3, cv=5):
+def feature_elimination_kbest(data, target, method="regression", k=10, test_size=1/3):
+    # Encodage des colonnes catégorielles
+    label_encoders = {}
+    for column in data.select_dtypes(include=['object']).columns:
+        le = LabelEncoder()
+        data[column] = le.fit_transform(data[column])
+        label_encoders[column] = le
+
+    # Séparer les variables explicatives (features) et la cible
+    X = data.drop(columns=[target])
+    y = data[target]
+
+    # Séparer les données en ensembles d'entraînement et de test
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=test_size, random_state=42)
+
+    # Initialiser le SelectKBest selon la méthode
+    if method == "regression":
+            score_func = f_regression
+    elif method == "classification":
+        score_func = f_classif
+    else:
+        return "Method must be 'regression' or 'classification'."
+
+    # Initialiser SelectKBest
+    selector = SelectKBest(score_func=score_func, k=k)
+
+    # Ajuster SelectKBest sur les données d'entraînement
+    selector.fit(X_train, y_train)
+
+    # Variables conservées et rejetées
+    rejected_variables = list(X.columns[~selector.get_support()])
+
+    return rejected_variables
+
+def feature_elimination_cv(data, target, model, method="regression", scoring="rmse",min_features_to_select=1,test_size=1/3, cv=5):
     """
-    Effectue une sélection de caractéristiques par élimination itérative avec validation croisée, 
-    en utilisant un modèle de forêt aléatoire pour la régression ou la classification.
+    Cette fonction réalise une sélection de caractéristiques basée sur le processus de validation croisée récursive (RFECV).
+    Elle est adaptée aux problèmes de régression et de classification, et elle évalue les variables en utilisant un modèle de machine learning passé en paramètre.
+    Les caractéristiques sont éliminées par ordre d'importance en utilisant un score de performance spécifique.
 
     Args:
-        data (pd.DataFrame): Les données d'entrée sous forme de DataFrame, comprenant les variables explicatives et la cible.
-        target (str): Le nom de la colonne cible dans le DataFrame `data`.
-        method (str, optional): Spécifie le type de modèle à utiliser, "regression" ou "classification". 
-                                Par défaut, utilise la régression.
-        scoring (str, optional): La métrique de performance à optimiser lors de la sélection. Pour la régression, 
-                                 choisir parmi "rmse" ou "mae". Pour la classification, choisir parmi "accuracy", 
-                                 "recall" ou "f1". Par défaut, "rmse" pour la régression.
-        min_features_to_select (int, optional): Le nombre minimal de caractéristiques à conserver dans le modèle final. 
-                                                Par défaut, 1.
-        test_size (float, optional): Proportion des données à utiliser pour le jeu de test. Par défaut, 1/3.
-        cv (int, optional): Nombre de plis pour la validation croisée. Par défaut, 5.
-
-    Raises:
-        ValueError: Si le type de modèle (`method`) n'est pas "regression" ou "classification", ou si la métrique (`scoring`) 
-                    n'est pas valide pour le type de modèle spécifié.
+        data (pd.DataFrame): Jeu de données contenant les variables explicatives et la cible. Les colonnes catégorielles seront encodées automatiquement.
+        target (str): Nom de la colonne cible dans le DataFrame `data`.
+        model (sklearn.base.BaseEstimator): Modèle de machine learning à utiliser pour l'évaluation des caractéristiques (e.g., `LinearRegression()` ou `RandomForestClassifier()`).
+        method (str, optional): Type de problème à résoudre, "regression" ou "classification". Par défaut, la valeur est "regression".
+        scoring (str, optional): Méthode de scoring à utiliser pour évaluer le modèle. Pour les problèmes de régression, utilisez "rmse" (Root Mean Squared Error) ou "mae" (Mean Absolute Error). Pour les problèmes de classification, utilisez "accuracy", "recall" ou "f1". Par défaut, "rmse".
+        min_features_to_select (int, optional): Nombre minimal de caractéristiques à sélectionner. Le processus s'arrête si ce nombre est atteint. Par défaut, 1.
+        test_size (float, optional): Proportion du jeu de données à utiliser comme ensemble de test. Doit être un nombre entre 0 et 1. Par défaut, 1/3 (33 %).
+        cv (int, optional): Nombre de plis (folds) de la validation croisée. Par défaut, 5.
     
+    Raises:
+        ValueError: Si la métrique spécifiée n'est pas appropriée pour la méthode sélectionnée
+
     Returns:
-        list: Une liste des variables qui ne participent pas à l'amélioration de la métrique choisie.
+        list: Liste des variables rejetées après la sélection des caractéristiques.
+    
+    Notes:
+        Veuillez initier un modèle avant d'exécuter cette fonction. Par exemple model = LinearRegression() si method = "regression".
+        Ou model = LogisticRegression() si method = "classification". Veuillez également importer les modules nécessaires.
     """
     # Encodage des colonnes catégorielles
     label_encoders = {}
@@ -196,9 +235,7 @@ def feature_elimination_cv(data, target, method="regression", scoring="rmse",min
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=test_size, random_state=42)
 
     # Initialiser le modèle RandomForest selon la méthode
-    if method == "regression":
-        model = RandomForestRegressor()
-        
+    if method == "regression":        
         # Définir les scoring pour la régression
         if scoring == "rmse":
             scoring_func = make_scorer(lambda y_true, y_pred: mean_squared_error(y_true, y_pred, squared=False))
@@ -207,9 +244,7 @@ def feature_elimination_cv(data, target, method="regression", scoring="rmse",min
         else:
             return "Invalid scoring method for regression. Use 'rmse' or 'mae'."
 
-    elif method == "classification":
-        model = RandomForestClassifier()
-        
+    elif method == "classification":        
         # Définir les scoring pour la classification
         if scoring == "accuracy":
             scoring_func = make_scorer(accuracy_score)

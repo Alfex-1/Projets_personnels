@@ -3,12 +3,8 @@
 # =============================================================================
 
 # Importation et division
-df_with_anom = pd.read_csv(r"C:\Projets_personnels\Prix_immobilier_Iowa\src\data\Data_selected_col.csv")
-df_without_anom = df_with_anom[df_with_anom['anomaly'] != -1]
-
-# Supprimer la colonne des anomalies
-del df_with_anom['anomaly']
-del df_without_anom['anomaly']
+df_with_anom = pd.read_csv(r"C:\Projets_personnels\Prix_immobilier_Iowa\src\data\Data_selected_col_with_anom.csv")
+df_without_anom = pd.read_csv(r"C:\Projets_personnels\Prix_immobilier_Iowa\src\data\Data_selected_col_without_anom.csv")
 
 ############ Avec anomalies
 
@@ -54,7 +50,7 @@ plt.title('Valeurs ajustées vs Résidus')
 plt.show()
 
 dw_stat = durbin_watson(residuals)
-print(f"Durbin-Watson Stat: {dw_stat:.2f}") # 1.5 : non-respect
+print(f"Durbin-Watson Stat: {dw_stat:.2f}") # 1.54 : non-respect
 
 # Test de Breusch-Pagan
 test = sms.het_breuschpagan(residuals, X)
@@ -88,7 +84,7 @@ plt.show() # Meilleure répartition que précédemment
 
 # Indépendance
 dw_stat2 = durbin_watson(residuals2)
-print(f"Durbin-Watson Stat: {dw_stat2:.2f}") # 1.5
+print(f"Durbin-Watson Stat: {dw_stat2:.2f}") # 1.45
 
 # Test de Breusch-Pagan (d'homoscedasticité)
 test2 = sms.het_breuschpagan(residuals2, X2)
@@ -113,12 +109,12 @@ model_without_anom = LinearRegression()
 model_without_anom.fit(X2_train,y2_train)
 
 # RMSE et MAPE sans les anomalies
-rmse_without_anom = estimate_forecasting_error(model=model_without_anom, X=X2, y=y2, k=5, metric="rmse")
-mape_without_anom = estimate_forecasting_error(model=model_without_anom, X=X2, y=y2, k=5, metric="mape")
+rmse_without_anom = estimate_forecasting_error(model=model_without_anom, X=X2, y=y2, k=10, metric="rmse")
+mape_without_anom = estimate_forecasting_error(model=model_without_anom, X=X2, y=y2, k=10, metric="mape")
 
 # RMSE et MAPE avec les anomalies
-rmse_with_anom = estimate_forecasting_error(model=model_with_anom, X=X, y=y, k=5, metric="rmse")
-mape_with_anom = estimate_forecasting_error(model=model_with_anom, X=X, y=y, k=5, metric="mape")
+rmse_with_anom = estimate_forecasting_error(model=model_with_anom, X=X, y=y, k=10, metric="rmse")
+mape_with_anom = estimate_forecasting_error(model=model_with_anom, X=X, y=y, k=10, metric="mape")
 
 print('RMSE sans anomalie :',rmse_without_anom)
 print('MAPE sans anomalie :',mape_without_anom)
@@ -130,47 +126,21 @@ print('MAPE avec anomalies :',mape_with_anom)
 # mais cela reste marginal.
 # Alors les intégrer dans l'entraînement du modèle n'est pas une mauvaise idée
 
-# Remarque : la normalité des résidus est respectée, donc les tests de Student sont valides
-# Or, deux variables n'apportenet sttaistiquement rien au modèle
-# Regardons les performances lorsqu'elles sont retirées (sans anomalies)
-
-X2_train = X2_train.drop(columns=['2nd Flr SF','Mo Sold'])
-X2_test = X2_test.drop(columns=['2nd Flr SF','Mo Sold'])
-
-new_model = LinearRegression()
-new_model.fit(X2_train,y2_train)
-
-X3 = X2.drop(columns=['2nd Flr SF','Mo Sold'])
-
-# Evaluation
-# RMSE et MAPE sans les anomalies
-rmse_new_model = estimate_forecasting_error(model=new_model, X=X3, y=y2, k=5, metric="rmse")
-mape_new_model = estimate_forecasting_error(model=new_model, X=X3, y=y2, k=5, metric="mape")
-
-print('RMSE du nouveau modèle :', rmse_new_model)
-print('MAPE du nouveau modèle :', mape_new_model)
-
-# Les performances restent inchangées, donc pour plus de simplicité, vaut mieux supprimer ces 2 variables
-
 # =============================================================================
 # Développement d'un modèle de régression polynomiale sans les anomalies
 # =============================================================================
 
-df = pd.read_csv(r"C:\Projets_personnels\Prix_immobilier_Iowa\src\data\Data_selected_col.csv")
-df = df[df['anomaly'] != -1]
-
-# Supprimer la colonne des anomalies
-del df['anomaly']
+df = pd.read_csv(r"C:\Projets_personnels\Prix_immobilier_Iowa\src\data\Data_selected_col_without_anom.csv")
 
 # Division variables explicatives (X) et variable expliquée (y)
-X = df.drop(columns=['2nd Flr SF','Mo Sold','SalePrice'], axis=1)
+X = df.drop(columns='SalePrice', axis=1)
 y = df['SalePrice']
 
 # Dvision apprentissage (train) et validation (test)
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
 # Créer un modèle polynomial de degré 2
-polynomial_features = PolynomialFeatures(degree=2)
+polynomial_features = PolynomialFeatures(degree=5)
 X_train = polynomial_features.fit_transform(X_train)
 X_test = polynomial_features.transform(X_test)
 
@@ -185,10 +155,11 @@ y_test_pred = model.predict(X_test)
 rmse_scorer = make_scorer(root_mean_squared_error, greater_is_better=False)
 mape_scorer = make_scorer(mean_absolute_percentage_error, greater_is_better=False)
 
-rmse_poly2 = round(-np.mean(cross_val_score(estimator = model, X=X, y=y, cv=5, n_jobs=3, scoring = rmse_scorer)),4)
-mape_poly2 = round(-np.mean(cross_val_score(estimator = model, X=X, y=y, cv=5, n_jobs=3, scoring = mape_scorer)),4)
+rmse_poly2 = round(-np.mean(cross_val_score(estimator = model, X=X, y=y, cv=10, n_jobs=3, scoring = rmse_scorer)),4)
+mape_poly2 = round(-np.mean(cross_val_score(estimator = model, X=X, y=y, cv=10, n_jobs=3, scoring = mape_scorer)),4)
 
 print("RMSE du modèle polynomial d'ordre 2 :", rmse_poly2)
 print("MAPE du modèle polynomial d'ordre 2 :", mape_poly2)
 
-# Le modèle polynomiale d'ordre 2 est moins performant, alors on garde la régression linéaire
+# Les deux modèles ont gloablement les mêmes performances,
+# alors pour plus de simplicité, on grade la régression linéaire

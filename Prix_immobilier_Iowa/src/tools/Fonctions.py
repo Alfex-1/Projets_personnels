@@ -17,7 +17,7 @@ from sklearn.ensemble import IsolationForest, RandomForestRegressor, RandomFores
 from sklearn.preprocessing import LabelEncoder, OneHotEncoder, PolynomialFeatures
 from statsmodels.stats.outliers_influence import variance_inflation_factor
 from sklearn.feature_selection import chi2, VarianceThreshold, RFECV, SelectKBest, f_classif, f_regression
-from sklearn.metrics import make_scorer, mean_squared_error, mean_absolute_error, accuracy_score, recall_score, f1_score, mean_absolute_percentage_error, root_mean_squared_error
+from sklearn.metrics import make_scorer, root_mean_squared_error, mean_absolute_error, accuracy_score, recall_score, f1_score, mean_absolute_percentage_error
 
 # =============================================================================
 # Fonctions
@@ -270,7 +270,7 @@ def feature_elimination_cv(data, target, model, method="regression", scoring="rm
 
     return rejected_variables
 
-def estimate_forecasting_error(model, X, y, k=5, metric='MSE'):
+def estimate_forecasting_error(model, X, y, k=5, metric='RMSE'):
     """
     Estime l'erreur théorique de prévision sur l'ensemble des données (train + test)
     à l'aide de la méthode de validation croisée K-Fold, avec choix de la métrique.
@@ -290,16 +290,14 @@ def estimate_forecasting_error(model, X, y, k=5, metric='MSE'):
     error_list = []
 
     # Choix de la fonction d'erreur selon la métrique spécifiée
-    if metric == 'mse':
-        error_fn = mean_squared_error
-    elif metric == 'rmse':
-        error_fn = lambda y_true, y_pred: np.sqrt(mean_squared_error(y_true, y_pred))
+    if metric == 'rmse':
+        error_fn = lambda y_true, y_pred: root_mean_squared_error(y_true, y_pred)
     elif metric == 'mae':
         error_fn = mean_absolute_error
     elif metric == 'mape':
         error_fn = mean_absolute_percentage_error
     else:
-        raise ValueError("Métrique non reconnue. Utilisez 'mse', 'rmse', 'mae' ou 'mape'.")
+        raise ValueError("Métrique non reconnue. Utilisez 'rmse', 'mae' ou 'mape'.")
 
     # Validation croisée
     for train_index, test_index in kfold.split(X):

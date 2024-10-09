@@ -65,9 +65,9 @@ Ces anomalies ne seront pas traitées, mais seront tout de même utilisées pour
 
 Ensuite, comme les variables qualitatives restantes ne sont pas numériques, il a fallu les encoder. Pour cela, des variables ont été créées autant qu'il existe de modalités dans chaque variable. L'idée est que pour chaque observation, une nouvelle colonne est exprimée avec la valeur "1" si la modalité correspondante est présente, et "0" sinon. Cela permet de transformer des variables catégorielles en un format compréhensible par les algorithmes de machine learning tout en préservant l'information de chaque modalité.
 
-Maintenant, les données sont entièrement "compréhensibles" par un modèle. Même si une pré-sélection a eu lieu, ce n'est pas suffisant, car il reste encore beaucoup de variables. L'idéal sera d'en avoir maximum 15, pour éviter le sur-ajustement. Donc, une sélection unvariée a été faite, en choissiant de garder les 20 meilleurs variables. Puis, pour prendre en compte des relations entre les variables. Une sélection multivariée se fait à partir de l'évaluation des performances d'un Random Forest par validation croisée avec l'élimination itérative de variable. Ainsi, les variables conservées minimisent d'une régression linéaire (modèle utilisé par la suite).
+Maintenant, les données sont entièrement "compréhensibles" par un modèle. Même si une pré-sélection a eu lieu, ce n'est pas suffisant, car il reste encore beaucoup de variables. L'idéal sera d'en avoir maximum 15, pour éviter le sur-ajustement. Donc, une sélection univariée a été faite, en choisissant de garder les 20 meilleures variables. Puis, pour prendre en compte des relations entre les variables. Une sélection multivariée se fait à partir de l'évaluation des performances d'un Random Forest par validation croisée avec l'élimination itérative de variable. Ainsi, les variables conservées minimisent d'une régression linéaire (modèle utilisé par la suite).
 
-Ainsi pour la base avec et sans les anomalies, seules 11 variables ont été conservées, cependant 10 d'entre elles sont communes au 2 bases.
+Ainsi pour la base avec et sans les anomalies, seules 11 variables ont été conservées, cependant 10 d'entre elles sont communes aux 2 bases.
 
 ## Stratégie de modélisation et résultats
 

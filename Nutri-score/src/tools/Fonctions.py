@@ -3,18 +3,20 @@ import csv
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
-from sklearn.model_selection import train_test_split, GridSearchCV
-from sklearn.metrics import precision_score,accuracy_score, f1_score, recall_score, roc_curve, auc,classification_report
+import missingno as msno
+from sklearn.preprocessing import LabelEncoder
+from sklearn.model_selection import train_test_split, KFold
+from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, confusion_matrix
 from sklearn.experimental import enable_iterative_imputer
-from sklearn.impute import MissingIndicator, KNNImputer, SimpleImputer,IterativeImputer
-from sklearn.ensemble import IsolationForest
-from sklearn.neural_network import MLPClassifier
-from itertools import permutations, combinations
+from sklearn.impute import KNNImputer, SimpleImputer, IterativeImputer
+from sklearn.neighbors import KNeighborsRegressor
 from imblearn.over_sampling import SMOTE
-
+from statsmodels.stats.outliers_influence import variance_inflation_factor
+from statsmodels.miscmodels.ordinal_model import OrderedModel
 
 def find_optimal_contamination(data, target_count, tol=1):
-    """Trouve la contamination optimale pour obtenir un nombre pr�cis d'individus apr�s nettoyage.
+    """
+    Trouve la contamination optimale pour obtenir un nombre pr�cis d'individus apr�s nettoyage.
 
     Args:
         data (DataFrame) : DataFrame contenant les données à nettoyer.
@@ -53,9 +55,23 @@ def find_optimal_contamination(data, target_count, tol=1):
 
     return best_contamination
 
-def encoding_all_data(data,reverse=False):
-    import pandas as pd
-    from sklearn.preprocessing import LabelEncoder
+def encoding_all_data(data, reverse=False):
+    """
+    Encode les colonnes non numériques d'un DataFrame à l'aide de l'encodage par étiquette.
+
+    Cette fonction prend un DataFrame en entrée, encode toutes les colonnes non numériques 
+    au format numérique en utilisant l'encodage par étiquette, et retourne à la fois le DataFrame 
+    encodé et un DataFrame contenant des informations sur le processus d'encodage.
+
+    Args:
+        data (pd.DataFrame): Le DataFrame d'entrée contenant à la fois des colonnes numériques et non numériques.
+        reverse (bool, optional): Si défini sur True, l'encodage des classes non numériques sera inversé. Par défaut, il est False.
+
+    Returns:
+        pd.DataFrame: Un nouveau DataFrame contenant les colonnes non numériques encodées ainsi que les colonnes numériques d'origine.
+        pd.DataFrame: Un DataFrame avec des informations sur l'encodage, y compris les noms des variables, 
+                      leurs codes correspondants et les modalités des classes.
+    """
     # Séparer les variables numériques
     numeric_columns = data.select_dtypes(include=[float, int]).columns
     non_numeric_data = data.drop(columns=numeric_columns)
@@ -98,157 +114,123 @@ def encoding_all_data(data,reverse=False):
 
     return encoded_data, infos
 
-def generate_layer_combinations(max_layers, max_neurons):
-    # Chiffres à utiliser pour les tailles de couches
-    sizes = list(range(2, max_neurons + 1))
+def vif_selection(data, target, vif_value=5):
+    """
+    Sélectionne les variables explicatives en fonction de leur facteur d'inflation de la variance (VIF).
+
+    Cette fonction calcule le VIF pour chaque variable explicative d'un DataFrame 
+    et supprime celles dont le VIF dépasse un seuil donné, indiquant une colinéarité élevée.
+
+    Args:
+        data (pd.DataFrame): Le DataFrame contenant les variables explicatives et la variable cible.
+        target (str): Le nom de la variable cible que l'on souhaite exclure de l'analyse.
+        vif_value (int, optional): La valeur seuil du VIF au-delà de laquelle une variable est considérée comme colinéaire. 
+                                   Par défaut, il est fixé à 5.
+
+    Returns:
+        list: Une liste des noms des variables rejetées en raison d'un VIF élevé.
+    """
+    # Séparer les variables explicatives et la variable cible
+    X = data.drop(columns=[target])
+    X = X.select_dtypes(include=['int', 'float'])
     
-    # Liste pour stocker les combinaisons
-    layer_combinations = []
-
-    # Une couche
-    layer_combinations.extend([(size,) for size in sizes])
-
-    # Plusieurs couches
-    for n_layers in range(2, max_layers + 1):
-        for combo in combinations(sizes, n_layers):
-            layer_combinations.extend(permutations(combo, n_layers))
+    rejected_variables = []
     
-    # Supprimer les doublons (permutations peuvent créer des doublons)
-    unique_combinations = list(set(layer_combinations))
-    
-    return unique_combinations
-
-def pred_metrics(model,X_train,X_test,y_train,y_test,method="Regression",average='weighted'):
-    # Prédictions sur l'ensemble d'apprentissage et de test
-    y_pred_train = model.predict(X_train)
-    y_pred_test = model.predict(X_test)
-    
-    if method == 'Regression':
-        # Calcul des métriques de régression
-        train_rmse = round(root_mean_squared_error(y_train, y_pred_train),2)
-        test_rmse = round(root_mean_squared_error(y_test, y_pred_test),2)
-        diff_rmse = round(abs(train_rmse-test_rmse),2)
-    
-        train_mae = round(mean_absolute_error(y_train, y_pred_train),2)
-        test_mae = round(mean_absolute_error(y_test, y_pred_test),2)
-        diff_mae = round(abs(train_mae-test_mae),2)
+    while True:
+        # Calculer le VIF pour chaque variable
+        vif_data = pd.DataFrame()
+        vif_data["Variable"] = X.columns
+        vif_data["VIF"] = [variance_inflation_factor(X.values, i) for i in range(X.shape[1])]
         
-        train_mae_pct = round(mean_absolute_percentage_error(y_train, y_pred_train)*100,2)
-        test_mae_pct = round(mean_absolute_percentage_error(y_test, y_pred_test)*100,2)
-        diff_mae_pct = round(abs(train_mae_pct-test_mae_pct),2)
-    
-        train_r2 = round(r2_score(y_train, y_pred_train)*100,2)
-        test_r2 = round(r2_score(y_test, y_pred_test)*100,2)
-        diff_r2 = round(abs(train_r2-test_r2),2)
+        # Trouver la variable avec le VIF le plus élevé
+        max_vif = vif_data["VIF"].max()
         
-        metrics = pd.DataFrame({
-            'RMSE_apprentissage': [train_rmse],
-            'RMSE_validation': [test_rmse],
-            'RMSE_diff_apprentissage_validation': [diff_rmse],
-            'MAE_apprentissage': [train_mae],
-            'MAE_validation': [test_mae],
-            'MAE_diff_apprentissage_validation': [diff_mae],
-            'MAE_pct_apprentissage': [train_mae_pct],
-            'MAE_pct_validation': [test_mae_pct],
-            'MAE_pct_diff_apprentissage_validation': [diff_mae_pct],
-            'R2_apprentissage': [train_r2],
-            'R2_validation': [test_r2],
-            'R2_diff_apprentissage_validation': [diff_r2]
-            }, index=[0])
+        # Vérifier si le VIF maximal est supérieur ou égal au seuil
+        if max_vif >= vif_value:
+            # Identifier la variable à supprimer
+            variable_to_remove = vif_data.loc[vif_data["VIF"].idxmax(), "Variable"]
+            rejected_variables.append(variable_to_remove)
+            # Supprimer la variable du DataFrame
+            X = X.drop(columns=[variable_to_remove])
+        else:
+            break  # Aucune variable n'a un VIF supérieur au seuil
+            
+    return rejected_variables
 
+def convergence_error_OrderedModel(data, target, distr_logistic, method_logistic, iterations, test_size, scoring='accuracy', average='macro'):
+    """
+    Calcule la convergence de la performance moyenne cumulative d'une régression logistique ordinale sur un certain nombre d'itérations
+    et affiche la courbe de convergence en fonction de la métrique spécifiée.
+
+    Args:
+        data (pd.DataFrame): Le jeu de données contenant les caractéristiques et la cible.
+        target (str): Le nom de la colonne de la variable cible à prédire.
+        distr_logistic (str): La distribution utilisée pour la régression logistique ordinale (par ex., 'logit').
+        method_logistic (str): La méthode d'optimisation pour l'entraînement du modèle (par ex., 'bfgs').
+        iterations (int): Le nombre d'itérations pour entraîner et évaluer le modèle.
+        test_size (float): La proportion des données utilisées pour le jeu de test lors de chaque itération (entre 0 et 1).
+        scoring (str, optional): La métrique utilisée pour évaluer les performances du modèle. Peut être 'accuracy', 'precision',
+                                 'recall', ou 'f1'. Par défaut 'accuracy'.
+        average (str, optional): La méthode d'agrégation des scores pour les métriques multiclasses. Utilisé pour les métriques
+                                 'precision', 'recall', et 'f1'. Par défaut 'macro'.
+
+    Returns:
+        float: La moyenne cumulative de la métrique choisie calculée sur toutes les itérations.
+    """
+    # Initialisations
+    X = data.drop(columns=target, axis=1)
+    y = data[target]
+    model_err = []
+
+    # Boucle pour entraîner le modèle sur plusieurs divisions de données et calculer l'erreur
+    for _ in range(iterations):
+        # Split de l'ensemble en apprentissage et validation
+        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=test_size, shuffle=True, random_state=None)
         
-    elif method == 'Classification':
-        # Calcul des métriques de classification
-        train_accuracy = round(accuracy_score(y_train, y_pred_train) * 100, 2)
-        test_accuracy = round(accuracy_score(y_test, y_pred_test) * 100, 2)
-        diff_accuracy = round(abs(train_accuracy - test_accuracy), 2)
-
-        train_precision = round(precision_score(y_train, y_pred_train, average=average) * 100, 2)
-        test_precision = round(precision_score(y_test, y_pred_test, average=average) * 100, 2)
-        diff_precision = round(abs(train_precision - test_precision), 2)
-
-        train_recall = round(recall_score(y_train, y_pred_train, average=average) * 100, 2)
-        test_recall = round(recall_score(y_test, y_pred_test, average=average) * 100, 2)
-        diff_recall = round(abs(train_recall - test_recall), 2)
-
-        train_f1 = round(f1_score(y_train, y_pred_train, average=average) * 100, 2)
-        test_f1 = round(f1_score(y_test, y_pred_test, average=average) * 100, 2)
-        diff_f1 = round(abs(train_f1 - test_f1), 2)
+        # Entraînement du modèle de classification
+        model = OrderedModel(y_train, X_train, distr=distr_logistic).fit(method=method_logistic, disp=False)
         
-        metrics = pd.DataFrame({
-            'Accuracy_apprentissage': [train_accuracy],
-            'Accuracy_validation': [test_accuracy],
-            'Accuracy_diff_apprentissage_validation': [diff_accuracy],
-            'Precision_apprentissage': [train_precision],
-            'Precision_validation': [test_precision],
-            'Precision_diff_apprentissage_validation': [diff_precision],
-            'Recall_apprentissage': [train_recall],
-            'Recall_validation': [test_recall],
-            'Recall_diff_apprentissage_validation': [diff_recall],
-            'F1_apprentissage': [train_f1],
-            'F1_validation': [test_f1],
-            'F1_diff_apprentissage_validation': [diff_f1]}, index=[0]) 
-        
-    else:
-        print("La méthode choisie doit être de 'Regression' ou de 'Classification' seulement.")
+        # Prédictions
+        y_pred_prob = model.predict(X_test)
+        predicted_classes = np.argmax(y_pred_prob, axis=1)
 
-def CV_parameters_classif(model,hidden_layer_sizes, activation, alpha, learning_rate, X_train,X_test,y_train,y_test,metric='neg_mean_absolute_error',average='weighted',selected_model=3):
-    # Définir les paramètres à optimiser et leurs valeurs possibles
-    param_grid = {
-    'hidden_layer_sizes': hidden_layer_sizes,
-    'activation': activation,
-    'alpha': alpha,
-    'learning_rate_init': learning_rate
-}
-
-    # Utiliser GridSearchCV
-    grid = GridSearchCV(estimator=model, param_grid=param_grid, cv=5, scoring=metric,n_jobs=4)
-    grid_result = grid.fit(X_train, y_train)
-
-    # Créer une DataFrame à partir des résultats de la grille
-    results_df = pd.DataFrame({
-        'Hidden Layers': grid_result.cv_results_['param_hidden_layer_sizes'],
-        'Activation': grid_result.cv_results_['param_activation'],
-        'Alpha': grid_result.cv_results_['param_alpha'],
-        'Learning_rate' : grid_result.cv_results_['param_learning_rate_init'],        
-        'Rank': grid_result.cv_results_['rank_test_score'],
-        'Std Test Score': grid_result.cv_results_['std_test_score']
-    })
-
-    # Trier les résultats par rang et on ne garde qu'un certain nombre de modèles
-    results_df['Std Test Score'] = round(results_df['Std Test Score'], 2)
-    results_df = results_df.sort_values(by='Rank', ascending=True).head(selected_model)
-    
-    # DataFrame pour stocker les hyperparamètres métriques des modèles sélectionnés
-    results_df_classif = pd.DataFrame()
-    
-    # Boucle sur les meilleurs modèles
-    for idx, row in results_df.iterrows():
-        # Construire le modèle avec les paramètres du modèle actuel
-        model = MLPClassifier(
-            hidden_layer_sizes=row['Hidden Layers'],
-            activation=row['Activation'],
-            alpha=row['Alpha'],
-            solver='adam',
-            learning_rate_init=float(row['Learning_rate']),
-            max_iter = 1000)
+        # Calcul de l'erreur en fonction de la méthode et la métrique choisie       
+        if scoring == 'accuracy' :
+            model_err.append(accuracy_score(y_test, predicted_classes))
+            metric = 'Accuracy'
+            title = f"\nConvergence de l'accuracy sur {iterations} itérations\n"
         
-        model.fit(X_train, y_train)
+        elif scoring == 'precision':
+            model_err.append(precision_score(y_test, predicted_classes, average=average))
+            metric = 'Precision'
+            title = f"\nConvergence de la precision sur {iterations} itérations\n"
         
-        # Calcul des métriques
-        metrics = pred_metrics(model, X_train, X_test, y_train, y_test, method='Classification',average=average)
+        elif scoring == 'recall':
+            model_err.append(recall_score(y_test, predicted_classes, average=average))
+            metric = 'Recall'
+            title = f"\nConvergence du reacll sur {iterations} itérations\n"
         
-        # Ajouter les hyperparamètres au DataFrame des métriques
-        metrics['Hidden Layers'] = [row['Hidden Layers']]
-        metrics['Activation'] = [row['Activation']]
-        metrics['Alpha'] = [row['Alpha']]
-        metrics['Learning_rate'] = [row['Learning_rate']]
-        metrics['Std Test Score'] = [row['Std Test Score']]
-        metrics['Rank'] = [row['Rank']]
-        
-        # Ajouter les résultats au DataFrame général
-        results_df_classif = pd.concat([results_df_classif, metrics], ignore_index=True)
-        
-    return results_df_classif
+        elif scoring == 'f1':
+            model_err.append(f1_score(y_test, predicted_classes, average=average))
+            metric = 'F1-Score'
+            title = f"\nConvergence du F1-Score sur {iterations} itérations\n"
 
+        else:
+            # Afficher un avertissement et utiliser l'accuracy par défaut
+            warnings.warn(f"Métrique '{scoring}' non reconnue. Veuillez choisir 'accuracy', 'precision', 'recall' ou 'f1'. Utilisation de l'accuracy par défaut.")
+            model_err.append(accuracy_score(y_test, predicted_classes))
+            metric = 'Accuracy'
+            title = f"\nConvergence de l'accuracy sur {iterations-1} itérations\n"
 
+    # Calcul de l'erreur cumulative moyenne sur toutes les itérations
+    perform_list = [np.mean(model_err[:i+1]) for i in range(iterations)]
+    perform = round(np.mean(perform_list), 4)
+
+    # Affichage du graphique de la convergence
+    plt.plot(perform_list, label='Erreur moyenne cumulative')
+    plt.xlabel('Nombre d\'itérations')
+    plt.ylabel(metric)
+    plt.title(title)
+    plt.show()
+
+    return perform

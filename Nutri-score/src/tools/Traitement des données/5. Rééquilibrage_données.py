@@ -1,5 +1,5 @@
 # Importation de la base
-chemin_fichier = r"C:\Données_nutriscore_v3\6Data_no_miss_noextrem_unbalanced.csv"
+chemin_fichier = r"C:\Données_nutriscore\6Data_no_miss_unbalanced.csv"
 
 df = pd.read_csv(chemin_fichier, sep=',')
 
@@ -11,21 +11,21 @@ print(nb)
 
 """
 NutriScore
-d    25.2
+d    25.4
 c    23.0
-e    19.5
-a    17.2
+e    19.4
+a    17.1
 b    15.1
 Name: proportion, dtype: float64
 NutriScore
-d    239731
-c    218306
-e    185096
-a    163022
-b    143892
+d    241933
+c    218796
+e    185374
+a    163051
+b    144073
 Name: count, dtype: int64
 
-Nombre d'observation sur la base brute : 950 047
+Nombre d'observation sur la base brute : 953 227
 """
 
 # Appliquer SMOTE
@@ -33,8 +33,9 @@ X = df.drop(columns=['NutriScore'])
 y = df['NutriScore']
 
 smote = SMOTE(sampling_strategy='not majority',  # 'not majority' : on ajoute des observations sur toutes les classes sauf la majoritaire
-              k_neighbors=4,  # Combien de voisins utilisés pour créer les nouvelles observations
-              random_state=42)
+              k_neighbors=4,
+              random_state=42,
+              n_jobs=-1)
 
 X_resampled, y_resampled = smote.fit_resample(X, y)
 
@@ -60,20 +61,19 @@ e    20.0
 Name: proportion, dtype: float64
 
 NutriScore
-a    239731   + 76 709 (+47.05%)
-d    239731   + 0
-b    239731   + 95 839 (+66.6%)
-c    239731   + 21 425 (+9.8%)
-e    239731   + 54 635 (+29.5%)
+a    241933   + 78 882 (+48.38%)
+d    241933   + 0
+b    241933   + 97 860 (+67.92%)
+c    241933   + 23 137 (+10.57%)
+e    241933   + 56 559 (+30.51%)
 Name: count, dtype: int64
 
 Après resampling :
-    - 1 198 655 observations,
-    - Dont 248 608 observations ajoutées (resampling),
-    - Soit 20.7% des observations sont "artificielles".
+    - 1 209 665 observations,
+    - Dont 256 438 observations ajoutées (resampling),
+    - Soit 21.2% des observations sont "artificielles".
 
 """
 
 # Enregistrer les données
-df_resampled.to_csv(
-    r"C:\Données_nutriscore_v3\7Data_no_miss_balanced.csv", index=False)
+df_resampled.to_csv(r"C:\Données_nutriscore\7Data_no_miss_balanced.csv", index=False)

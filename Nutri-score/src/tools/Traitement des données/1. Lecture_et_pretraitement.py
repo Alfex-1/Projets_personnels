@@ -1,9 +1,7 @@
-import pandas as pd
-import csv
 csv.field_size_limit(500 * 1024 * 1024)
 
 # Spécifiez le chemin vers votre fichier CSV
-chemin_fichier = r"C:\Données_nutriscore_v1\1Data_brut.csv"
+chemin_fichier = r"C:\Données_nutriscore\1Data_brut.csv"
 
 # Paramètres optionnels pour gérer la taille du fichier
 chunksize = 100000
@@ -28,13 +26,8 @@ df = pd.concat(pieces, ignore_index=True)
 print(df.head())
 
 # Base de données qu'avec les données (variables) utiles (aucun traitement encore)
-chemin_nvlles_donnnees = r"C:\Données_nutriscore_v1\2Data_usefull_feature_brut.csv"
+chemin_nvlles_donnnees = r"C:\Données_nutriscore\2Data_usefull_feature_brut.csv"
 df.to_csv(chemin_nvlles_donnnees, index=False)
-
-# Suppression des données manquantes
-miss = pd.DataFrame(round((df.isnull().sum() / len(df)) * 100, 2))
-miss = miss.sort_values(by=[0], ascending=False)
-
 
 # Suppression des colonnes qui ont trop de données manquantes (70% ou +)
 missing_percentage = df.isnull().mean() * 100

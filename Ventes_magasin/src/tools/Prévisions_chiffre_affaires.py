@@ -2,11 +2,11 @@
 # Importation de la base puis traitement
 # =============================================================================
 
-df = pd.read_csv("Ventes.csv", sep=";")
+df = pd.read_csv(r"C:\Projets_personnels\Ventes_magasin\src\data\Ventes.csv", sep=";")
 
-# Conservation que des colonnes utiles pour la modélisation
+# Conservation que des colonnes utiles pour la modï¿½lisation
 df.columns  # Pour avoir la liste des variables
-col_conserv = ['Date', 'Total_Amount']  # Liste des colonenes à conserver
+col_conserv = ['Date', 'Total_Amount']  # Liste des colonenes ï¿½ conserver
 df = df[col_conserv]
 del col_conserv
 
@@ -14,14 +14,13 @@ del col_conserv
 df['Date'] = pd.to_datetime(df['Date'], dayfirst=True)
 df = df.sort_values(by='Date')
 
-
 # Avoir la moyenne des ventes par jour
 df = df.groupby('Date')['Total_Amount'].mean().reset_index()
 df.set_index("Date", inplace=True)
 df = df.dropna()
 
 # =============================================================================
-# Visualisation de l'évolution des ventes
+# Visualisation de l'ï¿½volution des ventes
 # =============================================================================
 
 # Visualisation graphique des ventes au fil du temps
@@ -34,7 +33,7 @@ plt.grid(False)
 plt.show()
 
 # =============================================================================
-# Evaluation de la stationnarité
+# Evaluation de la stationnaritï¿½
 # =============================================================================
 
 # Division de la base en apprentissage/validation
@@ -42,31 +41,31 @@ train_data, test_data = temporal_train_test_split(df, test_size=1/3)
 
 # Test de DickerFuller
 DickeyFuller(train_data, 'Total_Amount', 0.05)
-# La série est stationnaire, donc nous n'avons pas besoin de différencier
+# La sï¿½rie est stationnaire, donc nous n'avons pas besoin de diffï¿½rencier
 
 # =============================================================================
-# Etude de l'autocorrélation
+# Etude de l'autocorrï¿½lation
 # =============================================================================
 
 p, q = pq_param(lags=25, data=train_data)
 
 # =============================================================================
-# Construction du modèle et création des prévisions
+# Construction du modï¿½le et crï¿½ation des prï¿½visions
 # =============================================================================
 
-# Création et ajustement du modèle ARMA sur les données d'entraînement
-# Comme la série est stationnaire, d=0 donc le modèle développé est un ARMA(p,q)
+# Crï¿½ation et ajustement du modï¿½le ARMA sur les donnï¿½es d'entraï¿½nement
+# Comme la sï¿½rie est stationnaire, d=0 donc le modï¿½le dï¿½veloppï¿½ est un ARMA(p,q)
 model = ARIMA(train_data, order=(0, 0, 0))
 model_fit = model.fit()
 
-# Résumé du modèle
+# Rï¿½sumï¿½ du modï¿½le
 print(model_fit.summary())
 
-# Prévisions pour l'ensemble de test
+# Prï¿½visions pour l'ensemble de test
 n_periods = len(test_data)
 forecast = model_fit.forecast(steps=n_periods)
 
-# Créez un index pour les prévisions basé sur l'index de test_data
+# Crï¿½ez un index pour les prï¿½visions basï¿½ sur l'index de test_data
 forecast_index = pd.date_range(
     start=test_data.index[0], periods=n_periods, freq='D')
 
@@ -74,21 +73,21 @@ forecast_index = pd.date_range(
 mape = mean_absolute_percentage_error(test_data, forecast)
 print(f'Mean Absolute Percentage Error : {mape:.2f}%')
 
-# Prédictions sur l'ensemble d'entraÃ®nement
+# Prï¿½dictions sur l'ensemble d'entraÃ®nement
 train_predictions = model_fit.predict(
     start=train_data.index[0], end=train_data.index[-1])
 
-# Tracer les prédictions et les données réelles avec les courbes collées
+# Tracer les prï¿½dictions et les donnï¿½es rï¿½elles avec les courbes collï¿½es
 plt.figure(figsize=(12, 6))
 plt.plot(train_data.index, train_data.values,
-         label="Ensemble d'entraînement", color='blue')
+         label="Ensemble d'entraï¿½nement", color='blue')
 plt.plot(test_data.index, test_data.values,
-         label='Ensemble de test (réel)', color='blue', linestyle='--')
+         label='Ensemble de test (rï¿½el)', color='blue', linestyle='--')
 plt.plot(train_data.index, train_predictions,
-         label='Prédictions (Entraînement)', color='red')
-plt.plot(forecast_index, forecast, label='Prévisions (Test)', color='green')
+         label='Prï¿½dictions (Entraï¿½nement)', color='red')
+plt.plot(forecast_index, forecast, label='Prï¿½visions (Test)', color='green')
 
-# Définir les limites des axes x et y pour une continuité visuelle
+# Dï¿½finir les limites des axes x et y pour une continuitï¿½ visuelle
 plt.xlim(train_data.index[0], test_data.index[-1])
 y_min = min(train_data.min().values[0], test_data.min().values[0])
 y_max = max(train_data.max().values[0], test_data.max().values[0])
@@ -96,12 +95,12 @@ plt.ylim(y_min, y_max)
 
 plt.xlabel('Date')
 plt.ylabel('Valeur')
-plt.title('Prédictions du modèle ARIMA')
+plt.title('Prï¿½dictions du modï¿½le ARIMA')
 plt.legend()
 plt.show()
 
 # =============================================================================
-# Validation du modèle ou non
+# Validation du modï¿½le ou non
 # =============================================================================
 
 # Test de Ljung-Box
@@ -112,32 +111,32 @@ ljung_box_results = sm.stats.acorr_ljungbox(
 jb_test_stat, jb_test_p_value, skew, kurtosis = sm.stats.jarque_bera(
     model_fit.resid)
 
-# Test de Hétéroscédasticité (Breusch-Pagan)
+# Test de Hï¿½tï¿½roscï¿½dasticitï¿½ (Breusch-Pagan)
 exog = add_constant(train_data)
 bp_test_stat, bp_test_p_value, _, _ = het_breuschpagan(model_fit.resid, exog)
 
 results_df = pd.DataFrame({
     'Test': ['Ljung-Box', 'Jarque-Bera', 'Breusch-Pagan'],
     'p-value': [ljung_box_results['lb_pvalue'].iloc[0], jb_test_p_value, bp_test_p_value],
-    'Hypothèse': [
-        'Pas d\'autocorrélation dans les résidus',
-        'Les résidus sont distribués normalement',
-        'Pas d\'hétéroscédasticité dans les résidus'],
-    'Hypothèse validée': [ljung_box_results['lb_pvalue'].iloc[0] > 0.05, jb_test_p_value > 0.05, bp_test_p_value > 0.05]
+    'Hypothï¿½se': [
+        'Pas d\'autocorrï¿½lation dans les rï¿½sidus',
+        'Les rï¿½sidus sont distribuï¿½s normalement',
+        'Pas d\'hï¿½tï¿½roscï¿½dasticitï¿½ dans les rï¿½sidus'],
+    'Hypothï¿½se validï¿½e': [ljung_box_results['lb_pvalue'].iloc[0] > 0.05, jb_test_p_value > 0.05, bp_test_p_value > 0.05]
 })
 
-# Afficher les résultats
+# Afficher les rï¿½sultats
 print(results_df.iloc[:, -2:])
 
 # Enseignements :
-# Les résidus sont un bruit blanc
-# Lé série n'est que du bruit blanc : p = q = 0
-# Donc il n'y a rien à modéliser
-# Les résidus sont hétéroscédastiques
-# Développement d'un modèle ARCH (ou GARCH) pour capturer cette hétéroscédasticité des résidus
+# Les rï¿½sidus sont un bruit blanc
+# Lï¿½ sï¿½rie n'est que du bruit blanc : p = q = 0
+# Donc il n'y a rien ï¿½ modï¿½liser
+# Les rï¿½sidus sont hï¿½tï¿½roscï¿½dastiques
+# Dï¿½veloppement d'un modï¿½le ARCH (ou GARCH) pour capturer cette hï¿½tï¿½roscï¿½dasticitï¿½ des rï¿½sidus
 
 # =============================================================================
-# Développement d'un modèle ARCH ou GARCH
+# Dï¿½veloppement d'un modï¿½le ARCH ou GARCH
 # =============================================================================
 
 df_results = GARCH_search(train_data, "Total_Amount", 7, 7)
@@ -149,7 +148,7 @@ results = model.fit(disp='off')
 summary = results.summary()
 
 # =============================================================================
-# Visualisation des prévisions
+# Visualisation des prï¿½visions
 # =============================================================================
 
 horizon_date = 30
@@ -161,13 +160,13 @@ pred = pd.Series(np.sqrt(pred.variance.values[-1, :]), index=future_dates)
 
 plt.figure(figsize=(10, 4))
 plt.plot(pred)
-plt.title('Prédiction de Volatilité - 30 Prochains Jours', fontsize=20)
+plt.title('Prï¿½diction de Volatilitï¿½ - 30 Prochains Jours', fontsize=20)
 
 # =============================================================================
-# Vérification des hypothèses
+# Vï¿½rification des hypothï¿½ses
 # =============================================================================
 
-# Nous ne devons pas avoir d'hétéroscédasticité conditionnelle
+# Nous ne devons pas avoir d'hï¿½tï¿½roscï¿½dasticitï¿½ conditionnelle
 
 # Residuals plot
 plt.figure(figsize=(10, 4))
@@ -176,18 +175,290 @@ plt.title("Residuals of the GARCH model")
 
 # ACF and PACF
 plot_acf(results.resid, lags=20)
-# S'il y a des pics significatifs, il y a hétéroscédasticité conditionnelle
+# S'il y a des pics significatifs, il y a hï¿½tï¿½roscï¿½dasticitï¿½ conditionnelle
 plot_pacf(results.resid, lags=20)
 
 # Shapiro-Wilk test for normality
 stat, p = shapiro(results.resid)
 print(f'Shapiro-Wilk statistic: {stat}, p-value: {p}')
-# La normalité des résidus est rejettée
+# La normalitï¿½ des rï¿½sidus est rejettï¿½e
 
-# LM test for ARCH effects pour vérifier la présence d'hétéroscédasticité conditionnelle
+# LM test for ARCH effects pour vï¿½rifier la prï¿½sence d'hï¿½tï¿½roscï¿½dasticitï¿½ conditionnelle
 lm_test = het_arch(results.resid)
 print('LM Statistical Test: %.3f, p-value: %.3f' % (lm_test[0], lm_test[1]))
-# Le modèle ne capture pas correctement la structure de volatilité (car la P-Value est trop grande)
+# Le modï¿½le ne capture pas correctement la structure de volatilitï¿½ (car la P-Value est trop grande)
 
-# Globalement, le modèle ARMA et ARCH ne sont pas de bons modèles pour
-# modéliser les ventes de produits
+# Globalement, le modï¿½le ARMA et ARCH ne sont pas de bons modï¿½les pour
+# modï¿½liser les ventes de produits
+
+# =============================================================================
+# Utilisation d'un rÃ©seau de neuronnes
+# =============================================================================
+
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import LSTM, Dense
+from sklearn.preprocessing import MinMaxScaler
+from tensorflow.keras.preprocessing.sequence import TimeseriesGenerator
+from itertools import combinations, permutations
+from keras import regularizers
+from tensorflow.keras.callbacks import EarlyStopping
+from sklearn.metrics import mean_squared_error
+from sklearn.model_selection import KFold
+from sklearn.model_selection import TimeSeriesSplit
+
+train_data, test_data = temporal_train_test_split(df, test_size=1/3)
+
+# Normalisation des donnÃ©es
+scaler = MinMaxScaler()
+train_scaled = scaler.fit_transform(train_data)
+test_scaled = scaler.fit_transform(test_data)
+
+# CrÃ©ation des gÃ©nÃ©rateurs de sÃ©quences
+length = 2  # Longueur des sÃ©quences
+train_generator = TimeseriesGenerator(train_scaled, train_scaled, length=length, batch_size=1)
+test_generator = TimeseriesGenerator(test_scaled, test_scaled, length=length, batch_size=1)
+
+def generate_lstm_layer_combinations(max_layers, max_neurons):
+    """
+    GÃ©nÃ¨re toutes les combinaisons possibles de tailles de couches pour un modÃ¨le LSTM.
+    
+    Parameters:
+    - max_layers: le nombre maximum de couches.
+    - max_neurons: le nombre maximum de neurones dans une couche.
+    
+    Returns:
+    - unique_combinations: une liste contenant toutes les combinaisons uniques d'architectures.
+    """
+    # Chiffres Ã  utiliser pour les tailles de couches (de 2 Ã  max_neurons)
+    sizes = list(range(2, max_neurons + 1))
+    
+    # Liste pour stocker les combinaisons
+    layer_combinations = []
+
+    # Une seule couche
+    layer_combinations.extend([(size,) for size in sizes])
+
+    # Plusieurs couches
+    for n_layers in range(2, max_layers + 1):
+        for combo in combinations(sizes, n_layers):
+            layer_combinations.extend(permutations(combo, n_layers))
+    
+    # Supprimer les doublons (les permutations peuvent crÃ©er des doublons)
+    unique_combinations = list(set(layer_combinations))
+    
+    # Convertir chaque tuple en liste
+    unique_combinations = [list(combo) for combo in unique_combinations]
+    
+    return unique_combinations
+
+# GÃ©nÃ©rer des combinaisons avec jusqu'Ã  4 couches cachÃ©es et un maximum de 10 neurones par couche
+combinations_list = generate_lstm_layer_combinations(max_layers=3, max_neurons=3)
+
+def create_flexible_model(lstm_units_list, dense_units, l1, l2, input_shape,optimizer='adam', activation='relu', loss='mean_squared_error'):
+    
+    # Initier le modÃ¨le
+    model = Sequential()
+    
+    # Ajouter la premiÃ¨re couche LSTM
+    model.add(LSTM(lstm_units_list[0], activation=activation, return_sequences=(len(lstm_units_list) > 1), input_shape=input_shape))
+    
+    # Ajouter les couches LSTM suivantes
+    for i in range(1, len(lstm_units_list)):
+        return_seq = (i < len(lstm_units_list) - 1)
+        model.add(LSTM(lstm_units_list[i],
+                       activation=activation,
+                       return_sequences=return_seq,
+                       bias_regularizer=regularizers.L2(l2),
+                       kernel_regularizer=regularizers.L1L2(l1=l1, l2=l2)))
+    
+    # VÃ©rifier si dense_units est une liste, sinon le convertir en liste
+    if isinstance(dense_units, int):
+        dense_units = [dense_units]
+    
+    # Ajouter les couches Dense
+    for units in dense_units:
+        model.add(Dense(units, activation=activation))
+    
+    # Couche de sortie
+    model.add(Dense(1))
+    
+    # Compiler le modÃ¨le
+    model.compile(optimizer=optimizer, loss=loss)
+    
+    return model
+
+# Fonction de validation croisÃ©e personnalisÃ©e
+def custom_cross_val_search(train_generator, test_generator, lstm_units_list_combinations, dense_units_list_combinations, l1_values, l2_values, activation_list, input_shape,optimizer='adam',epochs=500):
+    results = []
+    
+    for lstm_units in lstm_units_list_combinations:
+        for dense_units in dense_units_list_combinations:
+            for l1 in l1_values:
+                for l2 in l2_values:
+                    for activation in activation_list:
+                        
+                        # CrÃ©er le modÃ¨le
+                        model = create_flexible_model(lstm_units, dense_units, l1, l2, optimizer=optimizer, activation=activation, input_shape=input_shape)
+                        
+                        # EntraÃ®nement avec EarlyStopping pour Ã©viter l'overfitting
+                        early_stopping = EarlyStopping(monitor='val_loss', patience=5, restore_best_weights=True)
+                        history = model.fit(train_generator, validation_data=test_generator, epochs=epochs, callbacks=[early_stopping], verbose=0)
+                        
+                        # RÃ©cupÃ©rer la perte sur les donnÃ©es de validation
+                        val_loss = history.history['val_loss'][-1]
+                        results.append({
+                            'lstm_units': lstm_units,
+                            'dense_units': dense_units,
+                            'l1': l1,
+                            'l2': l2,
+                            'optimizer': optimizer,
+                            'activation': activation,
+                            'val_loss': val_loss
+                        })
+    
+    # Trier les rÃ©sultats en fonction de la perte de validation
+    results = pd.DataFrame(sorted(results, key=lambda x: x['val_loss']))
+    
+    return results
+
+layer_combinations = combinations_list
+
+dense_units_list = [10,20]
+l1_values = [0.01, 0.5]
+l2_values = [0.01, 0.5]
+activation_list = ['relu', 'tanh']
+input_shape = (3,1)
+
+results_df = custom_cross_val_search(train_generator, test_generator,
+                                     lstm_units_list_combinations=layer_combinations,
+                                     dense_units_list_combinations=dense_units_list,
+                                     l1_values=l1_values, l2_values=l2_values,
+                                     optimizer='adam',
+                                     activation_list=activation_list,
+                                     input_shape=input_shape)
+
+print(results_df.head(1))
+
+
+def evaluate_model_with_cv(data, lstm_units, dense_units, l1, l2, optimizer, activation, input_shape, n_splits=5):
+    tscv = TimeSeriesSplit(n_splits=n_splits)
+    errors = []
+
+    for train_index, test_index in tscv.split(data):
+        # Utiliser iloc pour accÃ©der aux donnÃ©es par indice
+        train_data, test_data = data.iloc[train_index], data.iloc[test_index]
+        
+        # Normalisation des donnÃ©es
+        scaler = MinMaxScaler()
+        train_scaled = scaler.fit_transform(train_data)
+        test_scaled = scaler.transform(test_data)
+
+        # CrÃ©ation des gÃ©nÃ©rateurs de sÃ©quences
+        train_generator = TimeseriesGenerator(train_scaled, train_scaled, length=3, batch_size=1)
+        test_generator = TimeseriesGenerator(test_scaled, test_scaled, length=3, batch_size=1)
+
+        # CrÃ©er le modÃ¨le avec les meilleurs hyperparamÃ¨tres
+        early_stopping = EarlyStopping(monitor='val_loss', patience=5, restore_best_weights=True)
+        model = create_flexible_model(lstm_units, dense_units, l1, l2, optimizer=optimizer, activation=activation, input_shape=input_shape)
+
+        # EntraÃ®nement du modÃ¨le
+        model.fit(train_generator, epochs=500, callbacks=[early_stopping], verbose=0)
+
+        # Faire des prÃ©visions
+        predictions = model.predict(test_generator)
+
+        # Calculer l'erreur (par exemple, l'erreur quadratique moyenne)
+        actual = test_scaled[3:, 0]
+        error = np.sqrt(np.mean((predictions.flatten() - actual) ** 2))
+        errors.append(error)
+
+    # Retourner la moyenne des erreurs
+    return np.mean(errors)
+
+lstm_units = [2,3]
+dense_units=20
+l1=0.01
+l2=0.5
+optimizer='adam'
+activation='tanh'
+input_shape = (3,1)
+
+mean_error = evaluate_model_with_cv(data=df, lstm_units = lstm_units,
+                                    dense_units=dense_units, l1=l1, l2=l2,
+                                    optimizer=optimizer, activation=activation, input_shape=input_shape)
+
+print(f'Erreur thÃ©orique de prÃ©vision (RMSE) : {mean_error}')
+
+
+def visualize_predictions(lstm_units, dense_units, l1, l2, optimizer, activation, input_shape, train_data, test_data, k_periods,loss='mean_squared_error'):
+    # Normalisation des donnÃ©es de test
+    scaler = MinMaxScaler()
+    train_scaled = scaler.fit_transform(train_data)
+    test_scaled = scaler.transform(test_data)
+
+    # CrÃ©ation du gÃ©nÃ©rateur de sÃ©quences pour la base de test
+    train_generator = TimeseriesGenerator(train_scaled, train_scaled, length=2, batch_size=1)
+
+    # CrÃ©ation du modÃ¨le
+    model = Sequential()
+    model.add(LSTM(lstm_units[0], activation=activation, return_sequences=(len(lstm_units) > 1), input_shape=input_shape))
+    
+    for i in range(1, len(lstm_units)):
+        return_seq = (i < len(lstm_units) - 1)
+        model.add(LSTM(lstm_units[i],
+                       activation=activation,
+                       return_sequences=return_seq,
+                       bias_regularizer=regularizers.L2(l2),
+                       kernel_regularizer=regularizers.L1L2(l1=l1, l2=l2)))
+    if isinstance(dense_units, int):
+        dense_units = [dense_units]
+    for units in dense_units:
+        model.add(Dense(units, activation=activation))
+    model.add(Dense(1))
+    model.compile(optimizer=optimizer, loss=loss)
+    
+    # Faire des prÃ©visions sur la base de test
+    predictions = model.predict(test_generator)
+
+    # Inverser la normalisation pour obtenir les valeurs rÃ©elles
+    predictions_inverse = scaler.inverse_transform(predictions)
+    actual_inverse = scaler.inverse_transform(test_scaled[2:])
+
+    # PrÃ©visions sur K pÃ©riodes
+    forecast = []
+    last_sequence = test_scaled[-2:]  # DerniÃ¨re sÃ©quence de test
+
+    for _ in range(k_periods):
+        # PrÃ©dire la prochaine pÃ©riode
+        next_pred = model.predict(np.expand_dims(last_sequence, axis=0))
+        forecast.append(next_pred[0, 0])  # Stocker la prÃ©diction
+        # Mettre Ã  jour la sÃ©quence en incluant la derniÃ¨re prÃ©diction
+        last_sequence = np.roll(last_sequence, -1, axis=0)
+        last_sequence[-1] = next_pred
+
+    # Inverser la normalisation pour les prÃ©visions
+    forecast_inverse = scaler.inverse_transform(np.array(forecast).reshape(-1, 1))
+
+    # Visualiser les rÃ©sultats
+    # Obtenir les dates du test_data
+    dates = test_data.index
+
+    # CrÃ©er des dates pour les prÃ©visions futures
+    future_dates = pd.date_range(dates[-1], periods=k_periods+1, freq='D')[1:]  # Si frÃ©quence quotidienne
+
+    # Visualiser les rÃ©sultats
+    plt.figure(figsize=(14, 7))
+    plt.plot(dates[2:], actual_inverse, label='Valeurs rÃ©elles', color='blue')
+    plt.plot(dates[2:], predictions_inverse, label='PrÃ©dictions sur la base de test', color='orange')
+    plt.plot(future_dates, forecast_inverse, label='PrÃ©visions sur K pÃ©riodes', color='green', linestyle='--')
+    plt.gcf().autofmt_xdate()
+    plt.gca().xaxis.set_major_formatter(plt.matplotlib.dates.DateFormatter('%Y-%m-%d'))  # Format des dates
+    plt.title('Visualisation des PrÃ©dictions')
+    plt.xlabel('Date')
+    plt.ylabel('Valeur')
+    plt.legend()
+    plt.show()
+    
+    
+visualize_predictions(lstm_units, dense_units, l1, l2, optimizer, activation, input_shape=input_shape, train_data=train_data,test_data=test_data, k_periods=10,loss='mean_squared_error')
+

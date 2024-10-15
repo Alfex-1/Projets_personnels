@@ -6,7 +6,7 @@ En effet, deux objectifs ont été fixés au début de ce projet :
  1. Optimisation du traitement des données pour **minimiser le temps de calcul des différents modèles** tout en conservant la représentativité de la base de données initiale
  2. Comparaison de deux modèles de régression logistique ordinale pour  évaluer l'impact des classes déséquilibrées, puis pour choisir le meilleur modèle.
  
- *Important* : Il était prévu initialement d'utiliser des modèles de **Boosting** et des **réseaux de neurones (MLP)**. Malheureusement, étant donné la très grande quantité de données et les contraintes techniques, l'idée a été lancé, bien que des codes ont été développés. Des modèles très simples (de régression logistique ordinale) ont été exploités à la place.
+ *Important* : Il était prévu initialement d'utiliser des modèles de **Boosting** et des **réseaux de neurones (MLP)**. Malheureusement, étant donné la très grande quantité de données et les contraintes techniques, l'idée a été abandonné, bien que des codes ont été développés. Des modèles très simples (de régression logistique ordinale) ont été exploités à la place.
 
 ## Prérequis
 

@@ -29,11 +29,11 @@ Veuillez trouver la base de données utilisée en cliquant sur ce lien qui mène
 ### Utilisation des scripts
 
 1. **Installation de Python** : Veuillez installer Python dans sa version 3.12.6 Vous pouvez la télécharger  sur [python.org](https://www.python.org/).
-2. **Ordre à suivre lors de la naviguation des scripts** :
-    a. **`Fonctions.py`**
-    b. **`Etude exploratoire.py`**
-    c. **`Detection_anomalie.py`**
-    d. **`Modelisations.py`**
+2. **Ordre à suivre lors de la navigation des scripts** :
+   - **`Fonctions.py`**
+   - **`Etude exploratoire.py`**
+   - **`Detection_anomalie.py`**
+   - **`Modelisations.py`**
    
 ## Structure du dépôt 
 
@@ -69,7 +69,7 @@ python Fonctions.py
 
 ## Exploration des données
 
-D'abord,
+
 
 ## Stratégie de traitement et de modélisation
 
@@ -81,10 +81,9 @@ Pour la modélisation, le sous et le sur-échantillonnage sont très importants 
 3 modèles ont été comparés pour modéliser au mieux la relation entre les caractéristiques numériques des transactions et la possibilité qu'elles soient frauduleuses. Un modèle simple d'interprétation (la régression logistique), un modèle ayant un niveau intermédiaire d'interprétabilité (les K-NearNeighboors) puis un modèle complexe (le XGBoost). Leurs hyperparamètres ont été sélectionnés par validation croisée de sorte que ces hyperparamètres permettent de maximiser la capacité du modèle à distinguer les 2 classes que nous avons. La validation croisée permet de faire ce choix en minimisant le risque de sur-apprentissage du modèle, et donc de minimiser le risque que le modèle ne puisse pas se généraliser sur d'autres données.
 
 Pour finir, pour savoir quel était le meilleur modèle, 3 métriques d'évaluation ont été calculées par validation croisée :
-
-    - La précision : proportion de vrai positifs parmi tous les positifs (vrai comme faux) ;
-    - Le recall : proportion de vrai positif parmi les vrai positif et les faux négatifs ;
-    - Le F1 : combinaison du recall et de la précision pour évaluer entièrement les performances du modèle.
+- **Précision** : proportion de vrais positifs parmi tous les positifs (vrais comme faux).
+- **Recall** : proportion de vrais positifs parmi les vrais positifs et les faux négatifs.
+- **F1-Score** : combinaison du recall et de la précision pour évaluer entièrement les performances du modèle.
 
 Pour finir, une matrice de confusion est établie pour chaque modèle pour visualiser s'il existe des faux négatif et/ou des faux positifs.
 

@@ -29,7 +29,7 @@ Du fait de sa grande volumétrie (9 Go), il n'est pas possible de les stocker su
         - **`\Développement de modèles`** : Script Python utilisé pour développer et comparer les régression logistiques. Effectue avant une sélection de variable basée sur la corrélation entre les variables explicatives.
         - **`\Traitement des données`** : Scripts Python qui permettent de rendre les données utilisables dans un modèle statistique : gestion des valeurs manquantes et extrêmes. Effectue également un sous-échantillonnage sur la classe majoritaire et un sur-échantillonnage sur les autres classes.
 - __README.md__ : Le message qui décrit le projet         
-- __requirements_Pyton.txt__ : Liste des modules nécessaires à l'exécution des codes Python.      
+- __requirements.txt__ : Liste des modules nécessaires à l'exécution des codes Python.      
 
 ## Installation
 
@@ -42,7 +42,7 @@ git clone https://https://github.com/Alfex-1/Projets_personnels.git
 
 Pour Python, insérez cette ligne de commande dans le terminal :
 ```bash
-pip install -r requirements_Pyton.txt
+pip install -r requirements.txt
 ```
 
 

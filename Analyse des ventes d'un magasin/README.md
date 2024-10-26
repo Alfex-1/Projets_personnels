@@ -24,7 +24,7 @@ Les conditions préalables pour exploiter efficacement ce projet varient selon l
     - **`\data`** : Dossier où on retrouve le fichier .csv étant la base de données utilisées.      
     - **`\tools`** : Tous les codes Python et R dont un script Python dédié aux fonctions utilisées par les autres scripts       
 - __README.md__ : Le message qui décrit le projet         
-- __requirements_Pyton.txt__ : Liste des modules nécessaires à l'exécution des codes Python.  
+- __requirements_PytHon.txt__ : Liste des modules nécessaires à l'exécution des codes Python.  
 - __requirements_R.txt__ : Liste des modules nécessaires à l'exécution des codes R.      
 
 ## Installation
@@ -38,7 +38,7 @@ git clone https://https://github.com/Alfex-1/Projets_personnels.git
 
 Pour Python, insérez cette ligne de commande dans le terminal :
 ```bash
-pip install -r requirements_Pyton.txt
+pip install -r requirements_Python.txt
 ```
 Pour R, ouvrez et exécutez le script suivant:
 ```bash

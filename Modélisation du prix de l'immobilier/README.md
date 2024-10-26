@@ -22,7 +22,7 @@ Vous trouverez la base de données utilisée en cliquant sur ce lien qui mène d
     - **`\tools`** : Tous les scripts Python dont un dédié aux fonctions utilisées par les autres scripts
     - **`\data`** : Toutes les bases utilisées lors de ce projet (la base originale et les bases construites au cours du projet)
 - __README.md__ : Le message qui décrit le projet         
-- __requirements_Pyton.txt__ : Liste des modules nécessaires à l'exécution des codes Python.      
+- __requirements.txt__ : Liste des modules nécessaires à l'exécution des codes Python.      
 
 ## Installation
 
@@ -35,7 +35,7 @@ git clone https://https://github.com/Alfex-1/Projets_personnels.git
 
 Pour Python, insérez cette ligne de commande dans le terminal :
 ```bash
-pip install -r requirements_Pyton.txt
+pip install -r requirements.txt
 ```
 
 ## Objectifs de chaque script

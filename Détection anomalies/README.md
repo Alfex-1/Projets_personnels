@@ -69,7 +69,15 @@ python Fonctions.py
 
 ## Exploration des données
 
+Tout d'abord, la distribution des montants des transactions a été examinée (graphique 1.). Il apparaît que la très grande majorité des montants se situent entre 800 et 1200 environ, mais il existe certaines transactions qui sont caractérisées par des montants anormalement élevés allant à environ 3000. À partir de là, il est évident qu'il existe des transactions suspectes, mais très peu nombreuses. Ensuite, pour savoir ce qui caractérise ces montants élevés (graphique 2.), ils ont été examinés d'abord sous le prisme des types de comptes et du genre des clients associées à ces transactions. À première vue, il n'y a rien qui permette de segmenter une partie de clientèle. De même, lorsque les montants sont comparés avec les revenus des clients, il n'y a aucune relation apparente (graphique 3.).
 
+Une hypothèse s'est ensuite posé sur le volume des transactions : est-ce qu'un montant plus élevé est la conséquence d'un nombre d'éléments concernés dans les transactions. Cela a été analysé en plus du genre des clients encore une fois (graphique 4.). Visuellement, il pourrait y avoir une relation : globalement, plus le volume des transactions augmente, plus il y a de chance que le montant de la transaction soit anormalement élevée. De plus, il s'avère que 65 % des montants de transaction suspects sont réalisés par des femmes. Cela a été vérifié grâce à des tests statistiques, mais cela n'a rien donner de concluant. Donc le genre des clients peut être évincé définitivement des éléments à inspecter pour la détection des anomalies. 
+
+Dans le graphique 5. a été examinée la distribution des montants selon les jours de la semaine, mais rien de suspect n'est apparent. Lorsque l'âge des clients est analysé avec le type de compte, rien n'apparaît non plus : il y a autant de comptes courants que de compte épargne associés aux grands montants (graphique 6.), de même pour l'âge des clients : toutes les générations peuvent effectuer une grosse transaction.
+
+Pour avoir une idée globale, une matrice de corrélation a été établie pour les données numériques (graphique 7.), ainsi qu'une matrice d'indépendance pour les données non-numériques (graphique 8.). Dans les deux cas, aucune relation n'est notable. Sauf entre le genre des clients et les jours de la semaine. Autrement dit, il existe une relation entre le fait que le client soit un homme ou une femme et le jour de la semaine. En regardant ces mêmes résultats en supprimant les anomalies (graphiques 9. et 10.), ils ne changent que très peu.
+
+**Lecture d'interprétation** : Dans le graphique 8., ce sont les p-value qui y apparaissent. Deux variables sont dites dépendantes (nb : il existe une relation entre elles), si la p-value du test du Khi-deux est strictement inférieur au seuil de décision. Dans ce cas, le seuil choisi est de 0,05.
 
 ## Stratégie de traitement et de modélisation
 
@@ -124,5 +132,3 @@ Pour finir, vous trouverez les métriques ainsi que les matrices de confusion da
 |:-------------------------:|:-------------:|:---------------:|
 | Réel Normal              | 294           | 0               |
 | Réel Anomalie            | 0             | 50              |
-
-

@@ -80,6 +80,17 @@ print(transaction_count)
 # 65 % des montants de transaction les plus importants sont réalisés par des femmes
 # Globalement, plus le volume des transactions augmente, plus il y a de chance que le montant de la transaction soit anormalement élevée
 
+## Réalisation de tests statistiques pour le prouver
+
+### Relation Volume-Montant
+correlation, pvalue= correlation(df, 'Transaction_Volume', 'Transaction_Amount', alpha=0.05)
+# Corrélation de 4,57% et p-value de 0.1484 : il n'y a aucune relation statistiquement significative
+
+### Relation Genre-Montants
+quant_binary_ind(df, 'Gender', 'Transaction_Amount', alpha=0.05, graph=False)
+# Les deux variables sont indépendantes : médianes similaires
+
+
 # Montant par jours
 days_order = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
 plt.figure(figsize=(8, 5))

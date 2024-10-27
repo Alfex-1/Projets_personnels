@@ -11,6 +11,8 @@ from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_sc
 from xgboost import XGBClassifier
 from sklearn.neighbors import KNeighborsClassifier
 from imblearn.over_sampling import SMOTE
+import pingouin as pg
+from scipy.stats import shapiro, ansari, mannwhitneyu, fligner, kruskal, spearmanr, pearsonr, chi2_contingency, bartlett, f_oneway, kruskal
 
 def encoding_binary(data, list_variables, reverse=False, reverse_variables=None):
     """
@@ -76,6 +78,92 @@ def encoding_binary(data, list_variables, reverse=False, reverse_variables=None)
                 ignore_index=True)
 
     return encoded_data, infos
+
+def correlation(df, var1, var2, alpha=0.05):
+    # Création du nuage de points
+    plt.figure(figsize=(8, 6))
+    plt.scatter(df[var1], df[var2], alpha=0.5)
+    plt.xlabel(var1)
+    plt.ylabel(var2)
+    plt.title('Nuage de points')
+    plt.show()
+
+    # Tester la normalité du couple d'observations
+    multivariate_normality = pg.multivariate_normality(df[[var1, var2]])
+
+    if multivariate_normality[1] > alpha:
+        corr, p = pearsonr(df[var1], df[var2])
+        print("\nLe test effectué est le test celui de Pearson")
+
+    else:
+        corr, p = spearmanr(df[var1], df[var2])
+        print("\nLe test effectué est le test celui de Spearman")
+
+    corr = round(corr*100, 2)
+    p = round(p, 4)
+
+    return corr, p
+
+def quant_binary_ind(df, var_bin, var_quant, alpha=0.05, graph=True):
+    # Création des sous-table
+    binary = df[var_bin].unique()
+    df1 = df[df[var_bin] == binary[0]]
+    df2 = df[df[var_bin] == binary[1]]
+
+    # Affichage des graphiques si graph=True
+    if graph:
+        plt.figure(figsize=(12, 6))
+        sns.boxplot(x=var_bin, y=var_quant, data=df)
+        plt.title('Boîtes à moustaches')
+
+    # Tests de normalité
+    _, p_value_shap1 = shapiro(df1[var_quant])
+    _, p_value_shap2 = shapiro(df2[var_quant])
+
+    if p_value_shap1 < alpha or p_value_shap2 < alpha:
+        # Procédure non paramétrique
+
+        # Egalité des variances
+        _, p_value_ansari = ansari(df1[var_quant], df2[var_quant])
+
+        if p_value_ansari >= alpha:
+
+            # Egalité des médianes
+            _, p_value_wilcox = mannwhitneyu(df1[var_quant], df2[var_quant])
+
+            if p_value_wilcox >= alpha:
+                print("Les deux variables sont indépendantes : médianes similaires")
+            else:
+                print("Un lien de dépendance existe : médianes différentes")
+
+        else:
+            print(
+                "Les distributions conditionnelles de X connaissant Y différent d’un paramètre d’échelle.")
+
+    else:
+        # Procédure paramétrique
+
+        # Egalité des variances
+        var_test = stats.levene(df1[var_quant], df2[var_quant])
+
+        # Egalité des moyennes
+        if var_test.pvalue >= alpha:
+            t_test = stats.ttest_ind(
+                df1[var_quant], df2[var_quant], equal_var=True)
+            if t_test.pvalue >= alpha:
+                print("Les variables sont indépendantes : moyennes similaires")
+            else:
+                print(
+                    "Il existe une dépebdance entre les variables : moyennes différentes")
+        else:
+            t_test = stats.ttest_ind(
+                df1[var_quant], df2[var_quant], equal_var=False)
+            if t_test.pvalue >= alpha:
+                print("Les variables sont indépendantes : moyennes similaires")
+            else:
+                print(
+                    "Il existe une dépebdance entre les variables : moyennes différentes")
+
 
 def exhaustive_logistic_regression_search(X, y, penalties, C_values, l1_ratios, solvers, 
                                           metric='accuracy', average='macro', cv=10):

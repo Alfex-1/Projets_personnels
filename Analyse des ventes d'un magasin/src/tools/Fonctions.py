@@ -177,11 +177,11 @@ def correlation(df, var1, var2, alpha=0.05):
 
     if multivariate_normality[1] > alpha:
         corr, p = pearsonr(df[var1], df[var2])
-        print("\nLe test effectué est le test de Pearson")
+        print("\nLe test effectué est le test celui de Pearson")
 
     else:
         corr, p = spearmanr(df[var1], df[var2])
-        print("\nLe test effectué est le test de Spearman")
+        print("\nLe test effectué est le test celui de Spearman")
 
     corr = round(corr*100, 2)
     p = round(p, 4)

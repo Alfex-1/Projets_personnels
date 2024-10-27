@@ -1,5 +1,5 @@
 Bonjour, bienvenue dans mon repos dans lequel sont conservés tous les projets réalisés en autodidacte.
-Vous y trouverez des projets ayant des natures différentes qui mettent en lumière une majorité d'élements acquis lors de mon apprentissage universitaire (spécialisé en Data Science) et mon auto-apprentissage, que cela soit sur les connaissances techniques en statistiques, programmation, mais aussi sur l'apprentissage de nouveaux outils. Voici la liste et la description des projets réalisés concernant à la fois la modélisation statistique et la Business Intelligence.
+Vous y trouverez des projets ayant des natures différentes qui mettent en lumière une majorité d'éléments acquis lors de mon apprentissage universitaire (spécialisé en Data Science) et mon auto-apprentissage, que cela soit sur les connaissances techniques en statistiques, programmation, mais aussi sur l'apprentissage de nouveaux outils. Voici la liste et la description des projets réalisés concernant à la fois la modélisation statistique et la Business Intelligence.
 
 **Projets de modélisation**:
 1. *Nutri-Score* : Exploration et traitement des données sur un grand ensemble de données concernant le Nutri-Score ainsi que leurs caractéristiques nutritionnelles. Puis, modélisation de ces données pour comprendre comment la fixation du Nutri-Score. Utilisation de *Python*.

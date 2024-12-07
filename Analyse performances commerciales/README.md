@@ -1,4 +1,4 @@
-# Analyse business d'une entreprise américaine
+# Analyse performances commerciales
 
 Ce projet a pour objectif de répondre à des besoins business sur les ventes d'une entreprise localisée sur l'ensemble des Etats-Unis. Ces besoins (et les données) sont réels et proviennent d'un site où certains clients demande une expertise statistique à des auto-entrepreneurs.
 La demande concernée était de répondre à des questions grâce à de la visualisation de données. Voici les questions posées (initialement, en anglais, mais traduis en français):

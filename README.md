@@ -8,5 +8,5 @@ Vous y trouverez des projets ayant des natures différentes qui mettent en lumi�
 4. *Séries temporelles financières* : Analyse, modélisation et prévisions temporelles des prix de clôtures des cours de Google, Microsoft, Apple et Netflix en se basant sur leur intercations.
 
 **Projets de Business Intelligence**:
-1. *Analyse des ventes d'un magasin* : Etude, analyse statistique et réponses aux questions buisiness sur les ventes annuelles d'un magasin. Analyse sur le plan multivarié (utilisation de *R*), et univarié (création d'un dashboard avec *PowerBI*). Utilisation de tests statistiques (en *Python*) pour appuyer ou non les résultats montrés par l'analyse univariée. Enfin, modélisation de l'évolution du projet au cours de l'année pour prédire le profit pour l'année à suivre (en *Python*).
-2. *Analyse business* : Analyse et visualisation, sur *Qlik Sense*, des données de ventes d'une entreprise américaine. 
+1. *Etude commerciale* : Etude, analyse statistique et réponses aux questions buisiness sur les ventes annuelles d'un magasin. Analyse sur le plan multivarié (utilisation de *R*), et univarié (création d'un dashboard avec *PowerBI*). Utilisation de tests statistiques (en *Python*) pour appuyer ou non les résultats montrés par l'analyse univariée. Enfin, modélisation de l'évolution du projet au cours de l'année pour prédire le profit pour l'année à suivre (en *Python*).
+2. *Performances ventes* : Analyse et visualisation, sur *Qlik Sense*, des données de ventes d'une entreprise américaine. 

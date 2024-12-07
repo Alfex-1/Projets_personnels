@@ -1,4 +1,4 @@
-# Analyse des ventes de produits (2023)
+# Etude commerciale (2023)
 
 Pour construire une stratégie marketing fiable, il est essentiel de comprendre les habitudes de consommation des clients. Cette étude analyse statistiquement les tendances de consommation des clients. Il est donc demande de répondre à deux questions majeures :
 

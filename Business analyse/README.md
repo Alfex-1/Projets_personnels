@@ -46,6 +46,8 @@ Au sein de la Californie, entre 2021 et 2024, le profit moyen par produit vendu 
 Concernant le type de livraisons, il est possible d'émettre l'hypothèse selon laquelle plus les produits sont envoyés par des moyens de "haute gamme" sont moins profitables.
 Or, ce n'est pas le cas, car en moyenne, chaque produit envoyé en classe standard dégage un profit de 37,4 $, alors que les produits envoyés et reçus le même jour dégagent un profit moyen de 47 $.
 Ce phénomène peut s'expliquer par le fait que parmi les 404 articles achetés au total 35 % sont des photocopieuses et des accessoires et le prix moyen de ces deux sous-catégories de produits est de plus de 1000 $.
+
 De plus, il existe une corrélation de 48 % entre le prix des produits et les profits qu'ils dégagent. Autrement dit, les produits qui coût le plus cher à l'unité dégagent le plus de profits.
 Lorsque ces produits sont retirés de l'analyse, les types de livraisons sont profitables dans un ordre naturel : classe standard, seconde classe, première classe et enfin, le même jour avec respectivement un profit moyen par produit vendu de 31,9 $, 31,3 $, 30,5 $ et 26,9 $.
+
 La Californie se caractérise donc par des profits moyens par produit en hausse, portés principalement par l'achat de photocopieuses.

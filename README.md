@@ -9,4 +9,4 @@ Vous y trouverez des projets ayant des natures différentes qui mettent en lumi�
 
 **Projets de Business Intelligence**:
 1. *Etude commerciale* : Etude, analyse statistique et réponses aux questions buisiness sur les ventes annuelles d'un magasin. Analyse sur le plan multivarié (utilisation de *R*), et univarié (création d'un dashboard avec *PowerBI*). Utilisation de tests statistiques (en *Python*) pour appuyer ou non les résultats montrés par l'analyse univariée. Enfin, modélisation de l'évolution du projet au cours de l'année pour prédire le profit pour l'année à suivre (en *Python*).
-2. *Performances ventes* : Analyse et visualisation, sur *Qlik Sense*, des données de ventes d'une entreprise américaine. 
+2. *Analyse performances commerciales* : Analyse et visualisation, sur *Qlik Sense*, des données de ventes d'une entreprise américaine. 

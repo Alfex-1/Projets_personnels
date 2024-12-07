@@ -41,11 +41,13 @@ C'est est donc un client tout aussi occasionnel que la cliente précédente.
 Pour le 3e meilleur client, Sanijit Chand, bien que les profits réalisés sont inférieurs aux deux précédents, c'est en réalité un client régulier depuis 2021 et qui achète toujours encore et 80 % des profits sont réalisés dans le Minnesota.
 Ses profits tiennent à l'achat de 7 classeurs en septembre 2021. Il a acheté également pluseiurs autres produits comme des chaises, des accessoires, des enveloppes, du papier, etc.
 
-EÉtant donné que de manière générale, c'est au sein de la Californie que les profits réalisés sont les plus importants, il est utile de se concentrer sur les activités de cet Etat.
+Étant donné que de manière générale, c'est au sein de la Californie que les profits réalisés sont les plus importants, il est utile de se concentrer sur les activités de cet Etat.
 Au sein de la Californie, entre 2021 et 2024, le profit moyen par produit vendu augmente de 30$ à 44$, soit une augmentation de 47 % environ et 48 % des profits réalisés proviennent des ventes d'accessoires, de classeurs, de papiers et de photocopieuses.
 Concernant le type de livraisons, il est possible d'émettre l'hypothèse selon laquelle plus les produits sont envoyés par des moyens de "haute gamme" sont moins profitables.
 Or, ce n'est pas le cas, car en moyenne, chaque produit envoyé en classe standard dégage un profit de 37,4 $, alors que les produits envoyés et reçus le même jour dégagent un profit moyen de 47 $.
 Ce phénomène peut s'expliquer par le fait que parmi les 404 articles achetés au total 35 % sont des photocopieuses et des accessoires et le prix moyen de ces deux sous-catégories de produits est de plus de 1000 $.
+
 De plus, il existe une corrélation de 48 % entre le prix des produits et les profits qu'ils dégagent. Autrement dit, les produits qui coût le plus cher à l'unité dégagent le plus de profits.
 Lorsque ces produits sont retirés de l'analyse, les types de livraisons sont profitables dans un ordre naturel : classe standard, seconde classe, première classe et enfin, le même jour avec respectivement un profit moyen par produit vendu de 31,9 $, 31,3 $, 30,5 $ et 26,9 $.
+
 La Californie se caractérise donc par des profits moyens par produit en hausse, portés principalement par l'achat de photocopieuses.

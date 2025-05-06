@@ -28,7 +28,7 @@ Vous trouverez la base de données utilisée en cliquant sur ce lien qui mène d
 
 1. **Clonez le dépôt GitHub sur votre machine locale:** 
 ```bash
-git clone https://https://github.com/Alfex-1/Projets_personnels.git
+git clone https://github.com/Alfex-1/Projets_personnels.git
 ```
 
 2. **Installez les dépendances requises:**

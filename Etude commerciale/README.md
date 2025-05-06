@@ -31,7 +31,7 @@ Les conditions préalables pour exploiter efficacement ce projet varient selon l
 
 1. **Clonez le dépôt GitHub sur votre machine locale:** 
 ```bash
-git clone https://https://github.com/Alfex-1/Projets_personnels.git
+git clone https://github.com/Alfex-1/Projets_personnels.git
 ```
 
 2. **Installez les dépendances requises:**
@@ -95,11 +95,18 @@ Conclusion : même si des actions marketing et commerciales sont menées, le chi
 
 ## Modélisation du chiffre d'affaires
 
-Le deuxième enjeu de cette étude est d'estimer le niveau du chiffre d'affaires pour l'année 2024, au du moins le début de l'année 2024.
-Pour cela, deux modèles ont été utilisés : ARMA et GARCH. Ces modèles ont été ensuite passés dans la phase de validation pour confirmer si la modélisation était correcte mathématiquement.
-Étant donné que l'évolution du chiffre d'affaires avait une moyenne constante au fil du temps, il n'y avait aucune raison de différencier la série (technique pour rendre stationnaire une série temporelle et modélisable par la suite).
+Le second objectif de cette étude est d’estimer le chiffre d’affaires au début de l’année 2024. Pour cela, la structure temporelle de la série a été analysée. Malheureusement, l’analyse des fonctions d’autocorrélation (ACF et PACF) ne révèle aucune dynamique significative : la série semble dominée par du bruit. Dès lors, les modèles classiques de type ARIMA ou GARCH sont inadaptés.
 
-Cependant, en choisissant le modèle ARMA pour modéliser l'évolution du chiffre d'affaire, il s'avère que c'est un modèle d'ordre 0 (ou ARMA(0,0)), ce qui signifie que la variance des données (l'information contenue dans les données) n'est pas modélisable. Cela se manifeste par le fait que les observations sont indépendantes et identiquement distribuées autour de la moyenne qui est une constante : ce n'est que du bruit blanc. Les prévisions se font donc seulement à partir de cette moyenne constante. Cela été observé en développement le modèle sous Python, mais le cas est similaire sous SAS. En termes d'hypothèses, les résidus présentent une hétéroscédasticité : la variance des résidus change au fil du temps. Pour remédier à ce problème, le modèle GARCH permet de mieux capter cette volatilité qui peut changer selon les périodes.
+En revanche, une composante saisonnière, bien que peu marquée, semble présente. Deux approches simples ont donc été retenues pour modéliser ce comportement :
 
-En développement un modèle GARCH(6,0) - donc un modèle ARCH(6) - il apparaît que des prévisions sur le long terme ne sont pas possibles car le modèle converge vers une seule valeur au bout de quelques jours. De plus, le modèle ne valide pas l'hypothèse d'hétéroscédasticité conditionnelle qui est fondamentale pour ce modèle. Autrement dit, le modèle ARCH (ou GARCH) est approprié lorsque la variance des résidus dépend de l'information passée. Ce n'est pas le cas ici.
-En conclusion : ni le modèle ARMA, ni le modèle ARCH ne sont appropriés pour cette série temporelle, tout simplement car les données sont bruyantes et n'ont pas de struture temporelle modélisable.
+- Le modèle saisonnier naïf, qui projette les valeurs passées d’un cycle directement sur l’horizon futur. Il repose sur l’hypothèse d’une parfaite répétition saisonnière, sans paramètre à ajuster, hormis la durée du cycle.
+
+- La décomposition STL, qui isole les composantes de tendance, de saisonnalité et de bruit. La tendance est extrapolée linéairement, et la saisonnalité est reconduite telle quelle. Ce modèle offre une alternative plus souple lorsqu’il existe une cyclicité faible mais exploitable.
+
+Ces modèles, bien que rudimentaires, ont l’avantage d’être transparents, robustes et utilisables même en l’absence de dépendances temporelles classiques. Une validation croisée temporelle a permis d’estimer la durée optimale du cycle saisonnier :
+
+Modèle saisonnier naïf : cycle de 24 jours, erreur de prévision (SMAPE) = 56,27 %.
+
+Modèle STL : cycle de 31 jours, erreur de prévision (SMAPE) = 74,45 %.
+
+Conclusion : malgré une erreur de prévision élevée, le modèle saisonnier naïf reste la meilleure option dans ce contexte, faute de structure temporelle exploitable. Il devra néanmoins être utilisé avec prudence, et ses résultats interprétés comme des ordres de grandeur plutôt que des estimations précises.

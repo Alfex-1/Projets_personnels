@@ -20,7 +20,7 @@ Enfin, j'ai voulu mettre en avant l'évolution des profits en parallèle à tout
 
 **Clonez le dépôt GitHub sur votre machine locale:** 
 ```bash
-git clone https://https://github.com/Alfex-1/Projets_personnels.git
+git clone https://github.com/Alfex-1/Projets_personnels.git
 ```
 ## Structure du dépôt 
 

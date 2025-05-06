@@ -35,7 +35,7 @@ Du fait de sa grande volumétrie (9 Go), il n'est pas possible de les stocker su
 
 1. **Clonez le dépôt GitHub sur votre machine locale:** 
 ```bash
-git clone https://https://github.com/Alfex-1/Projets_personnels.git
+git clone https://github.com/Alfex-1/Projets_personnels.git
 ```
 
 2. **Installez les dépendances requises:**

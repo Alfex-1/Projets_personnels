@@ -19,7 +19,7 @@ Les conditions préalables pour exploiter efficacement ce projet varient selon l
    
 ## Structure du dépôt 
 
-- __docs__ : Le support business de présentation.      
+- __docs__ : Le support business de présentation et les graphiques montrant les résultats de la modélisation     
 - __src__     
     - **`\data`** : Dossier où on retrouve le fichier .csv étant la base de données utilisées.      
     - **`\tools`** : Tous les codes Python et R dont un script Python dédié aux fonctions utilisées par les autres scripts       

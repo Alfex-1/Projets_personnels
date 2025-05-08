@@ -103,6 +103,6 @@ Modèle STL : cycle de 14 semaines, erreur de prévision (SMAPE) = 29,41 %.
 
 Pour arriver à cette erreur, il a été nécessaire :
 - d'interpolé quadratiquement les jours absents,
-- de regrouper les données hebdomadairement en moyennant les chiffres d'affaires quotidiens.
+- de regrouper les données hebdomadairement en sommant les chiffres d'affaires quotidiens.
 
-Conclusion : les meilleurs modèles de chaque type (naïf et STL) donnent un même cycle et une erreur d eprévision similaire (environ 29%), ce qui est très bon compte tenu de l'absence de structure temporelle claire et de la naïveté des modèles. Ainsi des prévisions du chiffre d'affaires moyen par semaine peuvent être générées sur le long terme.
+Conclusion : les meilleurs modèles de chaque type (naïf et STL) donnent un même cycle et une erreur d eprévision similaire (environ 29%), ce qui est très bon compte tenu de l'absence de structure temporelle claire et de la naïveté des modèles. Ainsi des prévisions du chiffre d'affaires total par semaine peuvent être générées sur le long terme.

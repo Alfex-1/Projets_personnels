@@ -1,5 +1,6 @@
 import pandas as pd
 import numpy as np
+import matplotlib.pyplot as plt
 from statsmodels.tsa.stattools import adfuller
 import matplotlib.pyplot as plt
 from statsmodels.graphics.tsaplots import plot_acf, plot_pacf
@@ -80,7 +81,7 @@ def evaluate_seasonal_naive(series, horizon, seasonality_list, n_splits=5, step=
 
     return best_s, best_smape, best_forecast
 
-def seasonal_naive_forecast(series, horizon, seasonality):
+def seasonal_naive_forecast(series, horizon, seasonality, freq='D'):
     """
     Forecast future values using the seasonal naïve method.
 
@@ -99,10 +100,10 @@ def seasonal_naive_forecast(series, horizon, seasonality):
     reps = int(np.ceil(horizon / seasonality))  # combien de fois on doit répéter le dernier cycle
     forecast_values = np.tile(last_season.values, reps)[:horizon]  # découpe pile le bon nombre
 
-    index = pd.date_range(start=series.index[-1] + pd.Timedelta(1, unit="D"), periods=horizon, freq='D')
+    index = pd.date_range(start=series.index[-1] + pd.Timedelta(1, unit=freq), periods=horizon, freq=freq)
     return pd.Series(data=forecast_values, index=index)
 
-def stl_forecast(series, horizon, period):
+def stl_forecast(series, horizon, period, freq='D'):
     stl = STL(series, period=period, robust=True)
     res = stl.fit()
 
@@ -117,11 +118,12 @@ def stl_forecast(series, horizon, period):
     seasonal_forecast = np.tile(last_seasonal.values, reps)[:horizon]
 
     forecast_values = np.array(trend_forecast) + seasonal_forecast
-    index = pd.date_range(start=series.index[-1] + pd.Timedelta(1, unit="D"), periods=horizon, freq=series.index.freq or pd.infer_freq(series.index))
-    
+    start_date = series.index[-1] + pd.to_timedelta(1, unit=freq)
+    index = pd.date_range(start=start_date, periods=horizon, freq=freq)
+
     return pd.Series(forecast_values, index=index)
 
-def evaluate_stl_forecast(series, horizon, seasonality_list, n_splits=5, step=1):
+def evaluate_stl_forecast(series, horizon, seasonality_list, n_splits=5, step=1, freq='D'):
     results = defaultdict(list)
     forecast_overlay = defaultdict(list)
 
@@ -139,7 +141,7 @@ def evaluate_stl_forecast(series, horizon, seasonality_list, n_splits=5, step=1)
             if len(train) < s:
                 continue
             try:
-                forecast = stl_forecast(train, horizon, period=s)
+                forecast = stl_forecast(train, horizon, period=s, freq=freq)
                 score = pm.metrics.smape(test.values, forecast.values)
                 results[s].append(score)
                 forecast_overlay[s].append(forecast)
@@ -150,37 +152,16 @@ def evaluate_stl_forecast(series, horizon, seasonality_list, n_splits=5, step=1)
     avg_smape = {s: np.mean(scores) for s, scores in results.items() if scores}
     sorted_results = sorted(avg_smape.items(), key=lambda x: x[1])
 
-    best_s, best_smape = sorted_results[0]
+    if not sorted_results:
+        raise ValueError("Aucune saisonnalité n'a produit de résultats valides. Vérifie les paramètres.")
+    else:
+        best_s, best_smape = sorted_results[0]
+
     best_forecasts = forecast_overlay[best_s]
 
     print(f"✅ Meilleure saisonnalité STL : {best_s} — SMAPE moyenne = {best_smape:.2f}% sur {n_splits} splits")
 
     return best_s, best_smape, best_forecasts[-1]
-
-import matplotlib.pyplot as plt
-
-def plot_seasonal_naive(series, forecast):
-    plt.figure(figsize=(12, 5))
-
-    # Tracer la série réelle
-    plt.plot(series.index, series.values, label='Série réelle', color='blue')
-
-    # Tracer la prévision
-    plt.plot(forecast.index, forecast.values, label='Prévision (saisonnier naïf)',
-             color='orange', linestyle='--')
-
-    # Ligne verticale au début de la prévision
-    plt.axvline(x=series.index[-1], color='gray', linestyle=':')
-
-    # Mise en forme
-    plt.title("Prévision saisonnière naïve")
-    plt.xlabel("Date")
-    plt.ylabel("Valeur")
-    plt.legend(loc='upper left')
-    plt.grid(False)
-    plt.tight_layout()
-    plt.show()
-
 
 def stl_forecast_naive(ts, period, horizon):
     """
@@ -213,20 +194,33 @@ def stl_forecast_naive(ts, period, horizon):
 # Importation et traitement
 df = pd.read_csv(r"C:\Projets_personnels\Etude commerciale\src\data\Ventes.csv", sep=';')
 df = df[['Date','Total_Amount']]
-
-# Grouper par la somme les ventes par date
 df.loc[:,'Date'] = pd.to_datetime(df['Date'], format='%d/%m/%Y')
-df = df.groupby(['Date']).sum().reset_index()
-df.set_index('Date', inplace=True)
+df = df.groupby(['Date']).sum()
 
-# Interpolation
-new_dates = pd.date_range(start="2023-01-01", end="2023-12-31", freq='D')
-df = df.reindex(new_dates)
-df = df.interpolate(method='quadratic', limit_direction='both')
-df = abs(round(df,0))
+# Paramètres
+freq = 'W'
+interpolation = True
+operation = 'sum'
 
-# Test de stationnarité
-DickeyFuller(df, 'Total_Amount', 0.05, show_graph=False) # Stationnaire
+# Interpolation éventuelle
+if interpolation:
+    full_range = pd.date_range(start="2023-01-01", end="2023-12-31", freq='D')
+    df = df.reindex(full_range)
+    df = df.interpolate(method='quadratic', limit_direction='both')
+    df = df.round(0).abs()
+
+# Résampling
+if freq == 'W':
+    if operation == 'sum':
+        df = df.resample(freq).sum()
+    elif operation == 'mean':
+        df = df.resample(freq).mean()
+    else:
+        raise ValueError("operation doit être 'sum' ou 'mean'")
+    df = df.round(2).abs().astype(float)
+
+# # Test de stationnarité
+DickeyFuller(df, 'Total_Amount', 0.05, show_graph=True) # Stationnaire
 
 # ACF et PACF
 plot_acf(df, lags=25)
@@ -235,13 +229,13 @@ plot_pacf(df, lags=25)
 ts = df.iloc[:, 0]
 
 # Tester différentes saisonnalités
-max_period = 50  # Période max à tester, ici de 1 à 12 mois
+max_period = 20
 
 # Dictionnaire pour stocker les résultats
 results = []
 
 # Comparer les modèles pour chaque saisonnalité
-for period in range(2, max_period + 1):
+for period in range(3, max_period + 1):
     # Modèle additif
     decomposition_additive = seasonal_decompose(ts, model='additive', period=period)
     trend_additive = decomposition_additive.trend
@@ -279,13 +273,12 @@ for period in range(2, max_period + 1):
 results_df = pd.DataFrame(results)
 results_df = results_df.sort_values(by='SMAPE Additive')
 
-
 # Affichage des résultats
 print(results_df)
 
 # Identifier la meilleure combinaison (minimum de SMAPE)
 best_result = results_df.loc[results_df['SMAPE Additive'].idxmin()]
-print(f"Meilleur modèle : {best_result['Best Model']} avec une saisonnalité de {best_result['Period']} mois")
+print(f"Meilleur modèle : {best_result['Best Model']} avec une saisonnalité de {best_result['Period']} lags")
 
 # Tracer les prédictions avec la meilleure saisonnalité et modèle sans les résidus
 best_period = best_result['Period']
@@ -298,33 +291,45 @@ else:
 
 plt.figure(figsize=(12, 6))
 plt.plot(ts, label='Série réelle', color='blue')
-plt.plot(predicted_best, label=f'Prédiction {best_result["Best Model"]}', color='orange')
+plt.plot(predicted_best, label=f'Prédiction {best_result["Best Model"]}', color='red')
 plt.title(f"Prédictions avec le meilleur modèle ({best_result['Best Model']}) et saisonnalité {best_period}")
 plt.legend()
 plt.show()
 
 # Choisir la meilleure saisonnalité qui minimise l'erreur pour le modèle sausonnier naïf
-best_s, best_score, best_forecast = evaluate_seasonal_naive(df.iloc[:, 0], horizon=12, seasonality_list=np.arange(1, 100), n_splits=5)
+best_s, best_score, best_forecast = evaluate_seasonal_naive(df.iloc[:, 0], horizon=12, seasonality_list=np.arange(1, 25), n_splits=5)
 
 # Prévision sur 12 mois
-forecast = seasonal_naive_forecast(df.iloc[:, 0], horizon=62, seasonality=best_s)
-print(forecast)
+forecast = seasonal_naive_forecast(df.iloc[:, 0], horizon=best_s*3, seasonality=best_s, freq='W')
+# print(forecast)
 
-# Visualisation   
-plot_seasonal_naive(df.iloc[:, 0], forecast)
+# Visualisation
+plt.figure(figsize=(12, 5))
+plt.plot(ts.index, ts.values, label='Valeurs observées', color='blue')
+plt.plot(forecast.index, forecast.values, label='Prévisions', color='red', linestyle='--')
+plt.axvline(x=ts.index[-1], color='gray', linestyle=':', label="Début des prévisions")
+plt.xlabel("Date")
+plt.ylabel("Chiffre d'affaires")
+plt.legend(loc='best')
+plt.title("Prévisions du modèle saisonnier naïf")
+plt.grid(False)
+plt.tight_layout()
+plt.show()
 
 # Déterminer le cyle siaosnnier pour STL
-best_s, best_smape, best_forecasts = evaluate_stl_forecast(ts, 30, np.arange(2, 50), n_splits=5, step=1)
+best_s, best_smape, best_forecasts = evaluate_stl_forecast(ts, 12, np.arange(2, 20), n_splits=5, step=1, freq=freq)
 
 # Prévision STL avec extrapolation naïve du trend et de la saisonnalité   
-forecast_result = stl_forecast_naive(ts, period=best_s, horizon=30)
+forecast_result = stl_forecast_naive(ts, period=best_s, horizon=best_s*3)
 
 # Visualisation
 plt.figure(figsize=(12, 5))
 plt.plot(ts, label='Valeurs observées', color='blue')
-plt.plot(forecast_result.index, forecast_result, label='Prévision STL', color='red', linestyle='--')
-plt.axvline(ts.index[-1], color='gray', linestyle=':', label="Début de prévision")
-plt.legend()
-plt.title('Prévision STL avec extrapolation de tendance et saisonnalité')
+plt.plot(forecast_result.index, forecast_result, label='Prévisions', color='red', linestyle='--')
+plt.axvline(ts.index[-1], color='gray', linestyle=':', label="Début des prévisions")
+plt.ylabel("Chiffre d'affaires")
+plt.legend(loc='best')
+plt.title('Prévisiond du modèle STL avec extrapolation de tendance et saisonnalité')
+plt.grid(False)
 plt.tight_layout()
 plt.show()

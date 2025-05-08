@@ -19,7 +19,7 @@ Les conditions préalables pour exploiter efficacement ce projet varient selon l
    
 ## Structure du dépôt 
 
-- __docs__ : Le support business de présentation et les graphiques montrant les résultats de la modélisation     
+- __docs__ : Le support business de présentation, les graphiques montrant les résultats de la modélisation et le fichier Excel pour le recensement/analyse des expérimentations.
 - __src__     
     - **`\data`** : Dossier où on retrouve le fichier .csv étant la base de données utilisées.      
     - **`\tools`** : Tous les codes Python et R dont un script Python dédié aux fonctions utilisées par les autres scripts       
@@ -49,15 +49,7 @@ requirements_R.R
 
 Le script **`Analyse_factorielle.R`** effectue une Analyse Factorielle de Données Mixtes (AFDM) pour analyser s'il existe des tendances dans le comportement des clients.
 Le script **`Analyse_statistique.py`** est utilisé pour confirmer ou réfuter les hypothèses avancées avec les résultats de l'AFDM avec l'aide d'une série de tests statistiques.
-Le script **`Prévisions_chiffre_affaires.py`** fournit les codes pour la modélisation et la prévision du chiffre d'affaires.
-Le script **`Fonction.py`** répertorie toutes les fonctions Python qui servent à l'exécution des deux autres scripts Python.
-
-Avant d'utiliser les scripts Python, veuillez d'abord exécuter le script des fonctions :
-
-**Exécutez le script:** 
-```bash
-python Fonctions.py  
-```
+Le script **`Modélisation.py`** fournit les codes pour la modélisation et la prévision du chiffre d'affaires.
 
 ## Description de la base
 
@@ -105,8 +97,12 @@ En revanche, une composante saisonnière, bien que peu marquée, semble présent
 
 Ces modèles, bien que rudimentaires, ont l’avantage d’être transparents, robustes et utilisables même en l’absence de dépendances temporelles classiques. Une validation croisée temporelle a permis d’estimer la durée optimale du cycle saisonnier :
 
-Modèle saisonnier naïf : cycle de 24 jours, erreur de prévision (SMAPE) = 56,27 %.
+Modèle saisonnier naïf : cycle de 14 semaines, erreur de prévision (SMAPE) = 29,12 %.
 
-Modèle STL : cycle de 31 jours, erreur de prévision (SMAPE) = 74,45 %.
+Modèle STL : cycle de 14 semaines, erreur de prévision (SMAPE) = 29,41 %.
 
-Conclusion : malgré une erreur de prévision élevée, le modèle saisonnier naïf reste la meilleure option dans ce contexte, faute de structure temporelle exploitable. Il devra néanmoins être utilisé avec prudence, et ses résultats interprétés comme des ordres de grandeur plutôt que des estimations précises.
+Pour arriver à cette erreur, il a été nécessaire :
+- d'interpolé quadratiquement les jours absents,
+- de regrouper les données hebdomadairement en moyennant les chiffres d'affaires quotidiens.
+
+Conclusion : les meilleurs modèles de chaque type (naïf et STL) donnent un même cycle et une erreur d eprévision similaire (environ 29%), ce qui est très bon compte tenu de l'absence de structure temporelle claire et de la naïveté des modèles. Ainsi des prévisions du chiffre d'affaires moyen par semaine peuvent être générées sur le long terme.

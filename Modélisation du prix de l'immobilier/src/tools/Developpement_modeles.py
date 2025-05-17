@@ -3,8 +3,8 @@
 # =============================================================================
 
 # Importation et division
-df_with_anom = pd.read_csv(r"C:\Projets_personnels\Prix_immobilier_Iowa\src\data\Data_selected_col_with_anom.csv")
-df_without_anom = pd.read_csv(r"C:\Projets_personnels\Prix_immobilier_Iowa\src\data\Data_selected_col_without_anom.csv")
+df_with_anom = pd.read_csv(r"C:\Projets_personnels\Modélisation du prix de l'immobilier\src\data\Data_selected_col_with_anom.csv")
+df_without_anom = pd.read_csv(r"C:\Projets_personnels\Modélisation du prix de l'immobilier\src\data\Data_selected_col_without_anom.csv")
 
 ############ Avec anomalies
 
@@ -130,7 +130,7 @@ print('MAPE avec anomalies :',mape_with_anom)
 # Développement d'un modèle de régression polynomiale sans les anomalies
 # =============================================================================
 
-df = pd.read_csv(r"C:\Projets_personnels\Prix_immobilier_Iowa\src\data\Data_selected_col_without_anom.csv")
+df = pd.read_csv(r"C:\Projets_personnels\Modélisation du prix de l'immobilier\src\data\Data_selected_col_without_anom.csv")
 
 # Division variables explicatives (X) et variable expliquée (y)
 X = df.drop(columns='SalePrice', axis=1)
@@ -140,12 +140,12 @@ y = df['SalePrice']
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
 # Créer un modèle polynomial de degré 2
-polynomial_features = PolynomialFeatures(degree=5)
+polynomial_features = PolynomialFeatures(degree=2)
 X_train = polynomial_features.fit_transform(X_train)
 X_test = polynomial_features.transform(X_test)
 
 model = LinearRegression()
-model.fit(X_train, y_train)
+model=model.fit(X_train, y_train)
 
 # Prédictions sur les ensembles d'entraînement et de test
 y_train_pred = model.predict(X_train)
@@ -155,8 +155,8 @@ y_test_pred = model.predict(X_test)
 rmse_scorer = make_scorer(root_mean_squared_error, greater_is_better=False)
 mape_scorer = make_scorer(mean_absolute_percentage_error, greater_is_better=False)
 
-rmse_poly2 = round(-np.mean(cross_val_score(estimator = model, X=X, y=y, cv=10, n_jobs=3, scoring = rmse_scorer)),4)
-mape_poly2 = round(-np.mean(cross_val_score(estimator = model, X=X, y=y, cv=10, n_jobs=3, scoring = mape_scorer)),4)
+rmse_poly2 = round(-np.mean(cross_val_score(estimator = model, X=X, y=y, cv=10, n_jobs=-1, scoring = rmse_scorer)),4)
+mape_poly2 = round(-np.mean(cross_val_score(estimator = model, X=X, y=y, cv=10, n_jobs=-1, scoring = mape_scorer)),4)
 
 print("RMSE du modèle polynomial d'ordre 2 :", rmse_poly2)
 print("MAPE du modèle polynomial d'ordre 2 :", mape_poly2)
